@@ -64,8 +64,10 @@ torch.set_default_tensor_type('torch.cuda.FloatTensor')
 ################# Define the Gaussian #######################
 dim=opt.dim
 mu=Variable(3*torch.unsqueeze(torch.ones(dim),dim=0))
-var=generate_Cov(dim,scale=opt.cov_range)
-np.savetxt('./TestResult/Cov_%s_scale_%s'%(timestr,opt.cov_range),var.cpu().data.numpy())
+var=np.loadtxt('./TestResult/Cov_rand_1_scale_0.6')
+var=torch.from_numpy(var).float().cuda()
+#var=generate_Cov(dim,scale=opt.cov_range)
+#np.savetxt('./TestResult/Cov_%s_scale_%s'%(timestr,opt.cov_range),var.cpu().data.numpy())
 U=U_Gaussian(mu,var)
 num_chain=opt.num_chain
 ################# Draw samples from SGHMC ####################
@@ -84,8 +86,8 @@ state_list_sg,state_mom_sg=SGHMC_obj.parallel_sample(state_pos_init,state_mom_in
 print('Sampling from NNSGHMC')
 Q_MLP=MLP(input_dim=2,hidden=40)
 D_MLP=Positive_MLP(input_dim=3,hidden=40)
-Q_MLP.load_state_dict(torch.load('./saveModel/Q_state_10_dim_10_step_0.01_clamp_5.0_range_6_time_20180604-1323'))
-D_MLP.load_state_dict(torch.load('./saveModel/D_state_10_dim_10_step_0.01_clamp_5.0_range_6_time_20180604-1323'))
+Q_MLP.load_state_dict(torch.load('./saveModel/Q_state_100_dim_10_clamp_5.0_range_6.0_time_20180413-1226'))
+D_MLP.load_state_dict(torch.load('./saveModel/D_state_100_dim_10_clamp_5.0_range_6.0_time_20180413-1226'))
 Q=parallel_Q_eff(dim=dim,Q_MLP=Q_MLP,U=U,num_chain=opt.num_chain,clamp=opt.clamp,dim_pen=opt.dim_pen)
 D=parallel_D_eff(dim=dim,D_MLP=D_MLP,U=U,num_chain=opt.num_chain,clamp=opt.clamp,dim_pen=opt.dim_pen)
 Gamma=parallel_Gamma_eff(dim,Q,D_NN=D)

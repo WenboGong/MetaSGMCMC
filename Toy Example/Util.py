@@ -76,6 +76,7 @@ class U_Gaussian:
         e=-0.5*torch.sum((state_pos-self.mu)*torch.t(torch.matmul(torch.inverse(self.var),torch.t(state_pos-self.mu))),1)
         prob=e+const
         return -prob
+    
 def contour_plot(U,low=2,high=4,num=100):
     x = np.linspace(low, high, num)
     y = np.linspace(low, high, num)
@@ -91,6 +92,7 @@ def contour_plot(U,low=2,high=4,num=100):
     #Tracer()()
     log_prob=log_prob.view(num,num).cpu().data.numpy()
     return X,Y,log_prob
+
 def convert_samples(state_list):
 
     counter=0
@@ -102,6 +104,7 @@ def convert_samples(state_list):
         counter+=1
     
     return state_convert
+
 def convert_to_Variable(state_list,transpose=True):
     counter=0
     for i in state_list:
@@ -118,10 +121,13 @@ def convert_to_Variable(state_list,transpose=True):
                 state_convert=torch.cat((state_convert,i),dim=0)
         counter+=1
     return state_convert
+
 def effectiveSampleSize(data, stepSize = 1) :
     """ Compute the ESS
         Args: data: np input with N x D, N is number of samples and D is dimension
         Output: ESS
+        Implementation follows the BEAST package
+        https://github.com/beast-dev/beast-mcmc/blob/master/src/dr/inference/trace/TraceCorrelation.java#L116
     """
     samples = int(data.shape[0])
 

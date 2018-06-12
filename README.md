@@ -11,7 +11,7 @@ Miguel is here because he is Wenbo's PhD supervisor.
 
 ## Gaussian experiments
 
-See README in [Toy Example/](Toy Example/)
+See README in [Toy Example/](Toy%20Example/)
 
 ## MNIST experiments
 

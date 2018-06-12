@@ -8,3 +8,11 @@ Contributions: Wenbo and Yingzhen initiated the project together.
 Wenbo designed the architecture of the sampler, and implemented all the experiments.
 Yingzhen is mainly responsible for loss function design, experiment design, and the paper writing.
 Miguel is here because he is Wenbo's PhD supervisor.
+
+## Gaussian experiments
+
+See README in [Toy Example/](Toy Example/)
+
+## MNIST experiments
+
+TODO

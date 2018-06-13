@@ -1,6 +1,6 @@
 # Toy Example
 ## Introduction
-This example corresponds to the toy experiment in TODO <!--([Meta-Learning for Stochastic Gradient MCMC]())-->.
+This example corresponds to the toy experiment in the Meta-learning for SG-MCMC paper.
 ## Setup
     Sampler_Training.py
 will train the meta sampler on 10D uncorrleated Gaussian with ranomly generated diagonal covariance matrix. The generated covariance is controlled

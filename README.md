@@ -2,12 +2,18 @@
 
 This repo contains the implementation of the experiments in the following paper:
 
-(TODO)
+[Wenbo Gong*](http://mlg.eng.cam.ac.uk/?portfolio=wenbo-gong),
+[Yingzhen Li*](http://yingzhenli.net) and
+[Jose Miguel Hernandez Lobato](https://jmhl.org)
+
+[Meta-Learning for Stochastic Gradient MCMC](https://arxiv.org/abs/1806.04522)
+
+ArXiv 1806.04522
 
 Contributions: Wenbo and Yingzhen initiated the project together. 
 Wenbo designed the architecture of the sampler, and implemented all the experiments.
 Yingzhen is mainly responsible for loss function design, experiment design, and the paper writing.
-Miguel is here because he is Wenbo's PhD supervisor.
+Miguel is here because he is Wenbo's PhD supervisor, and he provided some comments on the draft.
 
 ## Gaussian experiments
 

@@ -40,7 +40,7 @@ def ReadStoredSamples(FilePath):
 
 '''
 
-For different tasks (Network Architecture Gen/ Sigmoid Gen / Dataset Gen), please change to corresponding folder, file name and act_func. The file should contain the samples drawn by the sampler. Same for other long_run_plot_ scripts.
+For different tasks (Network Architecture Gen/ Sigmoid Gen), please change to corresponding folder, file name and act_func. The file should contain the samples drawn by the sampler. Same for other long_run_plot_ scripts.
 
 '''
 

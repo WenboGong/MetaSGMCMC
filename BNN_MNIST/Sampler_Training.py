@@ -67,10 +67,10 @@ Q=parallel_Q_eff(total_dim,Q_MLP,MLP_mnist,num_chain,clamp=5,dim_pen=1.,dim_pen_
 D=parallel_D_eff(total_dim,D_MLP,MLP_mnist,num_chain,clamp_min=0.,clamp_max=1000,dim_pen=1.,dim_pen_p=1.,dim_pen_g=1.,sqrt=False)
 Gamma=parallel_Gamma_eff(total_dim,Q_NN=Q_MLP,D_NN=D_MLP)
 
-Adam_Q=torch.optim.Adam(list(Q_MLP.parameters()),lr=0.0015,betas=(0.5,0.9))
-Adam_D=torch.optim.Adam(list(D_MLP.parameters()),lr=0.0015,betas=(0.5,0.9))
+Adam_Q=torch.optim.Adam(list(Q_MLP.parameters()),lr=0.003,betas=(0.5,0.9))
+Adam_D=torch.optim.Adam(list(D_MLP.parameters()),lr=0.003,betas=(0.5,0.9))
 NNSGHMC_obj=NN_SGHMC(total_dim,MLP_mnist,D,Q,Gamma)
-epoch=100
+epoch=40
 ep_second=7
 eps=float(np.sqrt(0.007/data_N))
 eps2=float(np.sqrt(0.007/data_N))

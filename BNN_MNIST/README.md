@@ -48,6 +48,28 @@ To evaluate the sampler, run
 
     NetworkTopologyGeneralization.py
 You can specify which sampler to run at the beginning of this file. 
+
 Note: PSGLD is not included, you need to run 
+
     run_PSGLD.py
-and change the BNN activation function to 'ReLU' in [run_PSGLD.py](./run_PSGLD.py#L60)
+and change the BNN activation function to 'ReLU' in [run_PSGLD.py](./run_PSGLD.py#L60) and corresponding lr [run_PSGLD.py](./run_PSGLD.py#L69)
+To generate the results, you can run 
+
+        long_run_plot_generate.py
+for NNSGHMC/SGHMC/SGLD. You need to specify the location of stored samples generated in the previous step.
+
+For PSGLD, run 
+
+        long_run_plot_psgld.py
+with correct activation function in [long_run_plot_psgld.py](./long_run_plot_psgld.py#L116)
+## Activation Function Generalization
+You don't need to train new samplers, use the sampler trained in Network Architecture Generalization.
+
+To evaluate the sampler, run 
+
+        SigmoidGeneralization.py
+with specified sampler in [SigmoidGeneralization.py](./SigmoidGeneralization.py#L59). The samples will be stored in [Sigmoid_Generalization_Long_Run](./Sigmoid_Generalization_Long_Run). Note: you need to change the locations of stored samples and activation function to 'Sigmoid' in [long_run_plot_generate.py](./long_run_plot_generate.py#L48).
+
+For PSGLD, it is the same as Network Architecture Generalization, but need to change the learning rate and activation function to 'Sigmoid'.
+
+

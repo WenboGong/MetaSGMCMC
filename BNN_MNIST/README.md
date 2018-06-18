@@ -34,7 +34,7 @@ This folder contains scripts/results for MNIST classification results.
     
     run_PSGLD.py: Run PSGLD sampler for Network Architecture / Activation function generalization.
 ## Network Architecture Generalization
-The model for Q and D are the following files stored in root of [BNN_MNIST/](BNN_MNIST/), which can be used directly.
+The model for Q and D are the following files stored in root of [BNN_MNIST/](./), which can be used directly.
 
     Q_state_batch_500_baseline_50D_70G_step_0.007_40ep_broad_0.2
     D_state_batch_500_baseline_50D_70G_step_0.007_40ep_broad_0.2

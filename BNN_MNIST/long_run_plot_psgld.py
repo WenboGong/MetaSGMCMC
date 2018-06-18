@@ -34,7 +34,7 @@ def ReadStoredSamples(FilePath):
         state_list.append(torch.squeeze(i))
     return state_list
 
-File_Path_sghmc_list=['./ReLU_Generalization_Long_Run/Test_long_run_psgld_1_step_1.4',
+File_Path_psgld_list=['./ReLU_Generalization_Long_Run/Test_long_run_psgld_1_step_1.4',
                       './ReLU_Generalization_Long_Run/Test_long_run_psgld_2_step_1.4',
                       './ReLU_Generalization_Long_Run/Test_long_run_psgld_3_step_1.4',
                       './ReLU_Generalization_Long_Run/Test_long_run_psgld_4_step_1.4',
@@ -115,41 +115,41 @@ MNIST_test_BNN=test_class
 
 MLP_mnist=BNN(dim=784,hidden=40,layer_num=3,dim_out=10,act_func='ReLU')
 
-length=len(File_Path_sghmc_list)
-avg_time_sghmc=12000/12000
-Acc_sghmc_avg=[]
-NLL_sghmc_avg=[]
+length=len(File_Path_psgld_list)
+avg_time_psgld=12000/12000
+Acc_psgld_avg=[]
+NLL_psgld_avg=[]
 for ind in range(length):
     print('Current ind:%s'%(ind+1))
-    FilePath_sghmc=File_Path_sghmc_list[ind]
-    state_list_sghmc=ReadStoredSamples(FilePath_sghmc)
+    FilePath_psgld=File_Path_psgld_list[ind]
+    state_list_psgld=ReadStoredSamples(FilePath_psgld)
     
-    len_sghmc=len(state_list_sghmc)
-    Acc_sghmc_list=np.zeros(len_sghmc)
-    NLL_sghmc_list=np.zeros(len_sghmc)
-    time_list_sghmc=avg_time_sghmc*100/120*np.linspace(0,len_sghmc,len_sghmc)
+    len_psgld=len(state_list_psgld)
+    Acc_psgld_list=np.zeros(len_psgld)
+    NLL_psgld_list=np.zeros(len_psgld)
+    time_list_psgld=avg_time_psgld*100/120*np.linspace(0,len_psgld,len_psgld)
     
-    for ind,state_sghmc in zip(range(len_sghmc),state_list_sghmc):
+    for ind,state_psgld in zip(range(len_psgld),state_list_psgld):
         if (ind+1)%20==0:
             print('%s'%(ind+1))
-        Acc_sghmc,NLL_sghmc=Test_accuracy(MNIST_test_BNN_loader,MLP_mnist,state_sghmc,data_number=float(len(MNIST_test_BNN)))
-        Acc_sghmc_list[ind]=1.-Acc_sghmc
-        NLL_sghmc_list[ind]=-NLL_sghmc.data.cpu().numpy()
+        Acc_psgld,NLL_psgld=Test_accuracy(MNIST_test_BNN_loader,MLP_mnist,state_psgld,data_number=float(len(MNIST_test_BNN)))
+        Acc_psgld_list[ind]=1.-Acc_psgld
+        NLL_psgld_list[ind]=-NLL_psgld.data.cpu().numpy()
         
-    Acc_sghmc_avg.append(Acc_sghmc_list)
-    NLL_sghmc_avg.append(NLL_sghmc_list)
+    Acc_psgld_avg.append(Acc_psgld_list)
+    NLL_psgld_avg.append(NLL_psgld_list)
 
     
-All_Acc_sghmc=np.stack(tuple(Acc_sghmc_avg),axis=0)
-All_NLL_sghmc=np.stack(tuple(NLL_sghmc_avg),axis=0)
-Acc_sghmc=np.mean(np.stack(tuple(Acc_sghmc_avg),axis=0),axis=0)
-NLL_sghmc=np.mean(np.stack(tuple(NLL_sghmc_avg),axis=0),axis=0)
-np.savetxt('./ReLU_Generalization_Long_Run/Acc_Avg_psgld_step_1.4_TEST',Acc_sghmc)
-np.savetxt('./ReLU_Generalization_Long_Run/NLL_Avg_psgld_step_1.4_TEST',NLL_sghmc)
-np.savetxt('./ReLU_Generalization_Long_Run/All_Acc_psgld_step_1.4_TEST',All_Acc_sghmc)
-np.savetxt('./ReLU_Generalization_Long_Run/All_NLL_psgld_step_1.4_TEST',All_NLL_sghmc)
-Acc_sghmc_std=np.std(np.stack(tuple(Acc_sghmc_avg),axis=0),axis=0)
-NLL_sghmc_std=np.std(np.stack(tuple(NLL_sghmc_avg),axis=0),axis=0)
-np.savetxt('./ReLU_Generalization_Long_Run/Acc_Std_psgld_step_1.4_TEST',Acc_sghmc_std)
-np.savetxt('./ReLU_Generalization_Long_Run/NLL_Std_psgld_step_1.4_TEST',NLL_sghmc_std)
+All_Acc_psgld=np.stack(tuple(Acc_psgld_avg),axis=0)
+All_NLL_psgld=np.stack(tuple(NLL_psgld_avg),axis=0)
+Acc_psgld=np.mean(np.stack(tuple(Acc_psgld_avg),axis=0),axis=0)
+NLL_psgld=np.mean(np.stack(tuple(NLL_psgld_avg),axis=0),axis=0)
+np.savetxt('./ReLU_Generalization_Long_Run/Acc_Avg_psgld_step_1.4_TEST',Acc_psgld)
+np.savetxt('./ReLU_Generalization_Long_Run/NLL_Avg_psgld_step_1.4_TEST',NLL_psgld)
+np.savetxt('./ReLU_Generalization_Long_Run/All_Acc_psgld_step_1.4_TEST',All_Acc_psgld)
+np.savetxt('./ReLU_Generalization_Long_Run/All_NLL_psgld_step_1.4_TEST',All_NLL_psgld)
+Acc_psgld_std=np.std(np.stack(tuple(Acc_psgld_avg),axis=0),axis=0)
+NLL_psgld_std=np.std(np.stack(tuple(NLL_psgld_avg),axis=0),axis=0)
+np.savetxt('./ReLU_Generalization_Long_Run/Acc_Std_psgld_step_1.4_TEST',Acc_psgld_std)
+np.savetxt('./ReLU_Generalization_Long_Run/NLL_Std_psgld_step_1.4_TEST',NLL_psgld_std)
     

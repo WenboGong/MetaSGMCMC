@@ -113,7 +113,7 @@ MNIST_test_BNN=test_class
 
 ################################################################################
 
-MLP_mnist=BNN(dim=784,hidden=40,layer_num=3,dim_out=10)
+MLP_mnist=BNN(dim=784,hidden=40,layer_num=3,dim_out=10,act_func='ReLU')
 
 length=len(File_Path_sghmc_list)
 avg_time_sghmc=12000/12000

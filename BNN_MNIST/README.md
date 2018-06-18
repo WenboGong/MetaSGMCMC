@@ -53,6 +53,7 @@ Note: PSGLD is not included, you need to run
 
     run_PSGLD.py
 and change the BNN activation function to 'ReLU' in [run_PSGLD.py](./run_PSGLD.py#L60) and corresponding lr [run_PSGLD.py](./run_PSGLD.py#L69)
+
 To generate the results, you can run 
 
         long_run_plot_generate.py
@@ -63,7 +64,9 @@ For PSGLD, run
         long_run_plot_psgld.py
 with correct activation function in [long_run_plot_psgld.py](./long_run_plot_psgld.py#L116)
 ## Activation Function Generalization
-You don't need to train new samplers, use the sampler trained in Network Architecture Generalization.
+You don't need to train new samplers, use the sampler trained in Network Architecture Generalization. 
+
+**Note: Before running the each of the following experiments, check if you change to the correct stored sample location/activation functions and learning rate.**
 
 To evaluate the sampler, run 
 
@@ -72,4 +75,35 @@ with specified sampler in [SigmoidGeneralization.py](./SigmoidGeneralization.py#
 
 For PSGLD, it is the same as Network Architecture Generalization, but need to change the learning rate and activation function to 'Sigmoid'.
 
+## Dataset Generalization
+The stored models for D and Q are 
+
+        Q_state_batch_500_baseline_50D_70G_step_0.007_40ep_broad_0.2_datasetGen
+        D_state_batch_500_baseline_50D_70G_step_0.007_40ep_broad_0.2_datasetGen
+If you want to re-train the sampler, run 
+        
+        Sampler_Training_DataGen.py
+The trained model will be in [tmp_model_save](./tmp_model_save)
+
+To evaluate the sampler, run 
+
+        long_run_Dataset_Gen.py
+with specified sampler in [long_run_Dataset_Gen.py](./long_run_Dataset_Gen.py#L84)
+
+To generate the results, run 
+
+        long_run_Dataset_Gen_plot.py
+with the correct folder location. 
+
+The above results will be saved in [Dataset_Gen_Long_Run](./Dataset_Gen_Long_Run)
+
+
+## Generate Plots
+If you finish the above 3 experiments, you can run 
+
+        PlotResults.py
+to generate similar plots used in the paper. You need to specify the locations of stored results for all 3 experiments in [PlotResults.py](./PlotResults.py#L133)
+
+## Possible bugs
+The above experiment are runned with **PyTorch 0.4.0** with default GPU settings. However, in the early version of 0.4.0, the randperm() function are unspported by CUDA. So it will cause errors for Dataloader. You can solve it by manually change the randperm() function. See [[pytorch] randperm lacks CUDA implementation #6874](https://github.com/pytorch/pytorch/issues/6874)
 

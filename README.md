@@ -24,7 +24,7 @@ See README in [Toy Example/](Toy%20Example/)
 
 ## MNIST experiments
 
-TODO
+See README in [BNN_MNIST/](BNN_MNIST/)
 
 ## Citing the paper (bib)
 ```

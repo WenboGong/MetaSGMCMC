@@ -42,7 +42,7 @@ If you want to train new D and Q, run
 
     Sampler_Training.py
     
-with default settings. The trained model will be saved in [BNN_MNIST/tmp_model_save](BNN_MNIST/tmp_model_save/)
+with default settings. The trained model will be saved in [BNN_MNIST/tmp_model_save](./tmp_model_save/)
 
 To evaluate the sampler, run 
 
@@ -50,4 +50,4 @@ To evaluate the sampler, run
 You can specify which sampler to run at the beginning of this file. 
 Note: PSGLD is not included, you need to run 
     run_PSGLD.py
-and change the BNN activation function to 'ReLU' in [run_PSGLD.py](BNN_MNIST/run_PSGLD.py#L60)
+and change the BNN activation function to 'ReLU' in [run_PSGLD.py](./run_PSGLD.py#L60)

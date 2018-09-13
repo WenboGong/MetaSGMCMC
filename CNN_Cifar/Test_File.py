@@ -49,7 +49,7 @@ classes = ('plane', 'car', 'bird', 'cat',
 # Define time
 timestr = time.strftime("%Y%m%d-%H%M%S")
 ### Define parameters
-Param=GenerateParameters(Type='Adam',Batch_Size=64,Step_Size=0.001,Betas=(0.9,0.99),Epoch=500,Num_Run=1,Random_Seed=[10])
+Param=GenerateParameters(Type='Adam',Batch_Size=64,Step_Size=0.001,Betas=(0.9,0.99),Epoch=500,Num_Run=1,Random_Seed=[10],Precision=1e-3)
 
 ######################## Define own data loader ###########################
 tensor_train,tensor_train_label,tensor_test,tensor_test_label=SelectImage(trainset,testset)
@@ -80,6 +80,8 @@ for num_runs in range(Param['Num Run']):
             x,y=data[1][0].cuda(),data[1][1].cuda()
             out=CNN.forward(x)
             loss_output=loss(out,y)
+            for param in CNN.parameters():
+                loss_output+=Param['Precision']*torch.sum(param**2)
             loss_output.backward()
             Adam.step()
         if (ep+1)%5==0:

@@ -41,6 +41,7 @@ def GenerateParameters(Type,**kwargs):
         Param['Epoch']=kwargs['Epoch']
         Param['Random Seed']=kwargs['Random_Seed']
         Param['Num Run']=kwargs['Num_Run']
+        Param['Precision']=kwargs['Precision']
         assert len(Param['Random Seed'])==Param['Num Run'],'Number of runs are not consistent with length of random seeds'
     return Param
 def write_Dict(Filename,Dict):

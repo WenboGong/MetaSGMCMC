@@ -44,3 +44,179 @@ class Example_CNN(nn.Module):
         for s in size:
             num_features *= s
         return num_features
+
+class Parallel_CNN:
+    '''
+    The Parallel CNN Object (not really parallel T_T, for loop instead...)
+
+    Args:
+        num_CNN: The number of CNNs for Cross Chain loss
+        num_channel: The input channel
+    Methods:
+        sub_forward(weight,x): The forward pass for individual CNN
+        split_dimension(weight): Split the weight vector into desired weight tensor for CNN evaluation
+        forawrd(x,weight): Compute the log probability for all CNN
+    '''
+    def __init__(self,num_CNN=20,num_channle=3,filter_size=3,out_channel=16,flat_size=16*6*6,fc_size=100):
+        self.num_CNN=num_CNN
+        self.num_channel=num_channle
+        self.filter_size=filter_size
+        self.out_channel=out_channel
+        self.flat_size=flat_size
+        self.fc_size=fc_size
+    def split_dimension(self,weight):
+        '''
+        Split the vector into the desired shape
+
+        :param weight: The tensor with size :math:`numCNN x total dim`
+        :return: tensor with correct size: conv1, conv2,fc1,fc2 each with size :math:`num_CNN x ...`
+        '''
+        # Define the dimension for each layer
+        dim_tracker=0
+        conv1_size=self.out_channel*self.num_channel*self.filter_size**2
+        conv2_size=self.out_channel*self.out_channel*self.filter_size**2
+        fc1_size=self.flat_size*self.fc_size
+        fc1_bias_size=self.fc_size
+        fc2_size=self.fc_size*10
+        fc2_bias_size=10
+        # Extraction the weight
+        conv1_raw_tensor=weight[:,0:conv1_size]
+        dim_tracker+=conv1_size
+
+        conv1_bias_raw_tensor=weight[:,dim_tracker:dim_tracker+self.out_channel]
+        dim_tracker+=self.out_channel
+
+
+        conv2_raw_tensor=weight[:,dim_tracker:dim_tracker+conv2_size]
+        dim_tracker+=conv2_size
+        conv2_bias_raw_tensor=weight[:,dim_tracker:dim_tracker+self.out_channel]
+        dim_tracker+=self.out_channel
+
+
+        fc1_raw_tensor=weight[:,dim_tracker:dim_tracker+fc1_size]
+        dim_tracker+=fc1_size
+        fc1_bias_raw_tensor=weight[:,dim_tracker:dim_tracker+fc1_bias_size]
+        dim_tracker+=fc1_bias_size
+        fc2_raw_tensor=weight[:,dim_tracker:dim_tracker+fc2_size]
+        dim_tracker+=fc2_size
+        fc2_bias_raw_tensor=weight[:,dim_tracker:dim_tracker+fc2_bias_size]
+        # reshape
+        conv1_weight=conv1_raw_tensor.view(self.num_CNN,self.out_channel,self.num_channel,self.filter_size,self.filter_size)
+        conv1_bias=conv1_bias_raw_tensor.view(self.num_CNN,self.out_channel)
+        conv2_weight = conv2_raw_tensor.view(self.num_CNN, self.out_channel, self.out_channel, self.filter_size,
+                                             self.filter_size)
+        conv2_bias=conv2_bias_raw_tensor.view(self.num_CNN,self.out_channel)
+
+        fc1_weight=fc1_raw_tensor.view(self.num_CNN,self.fc_size,self.flat_size)
+        fc1_bias=fc1_bias_raw_tensor.view(self.num_CNN,self.fc_size)
+        fc2_weight=fc2_raw_tensor.view(self.num_CNN,10,self.fc_size)
+        fc2_bias=fc2_bias_raw_tensor.view(self.num_CNN,10)
+
+        return [conv1_weight,conv1_bias,conv2_weight,conv2_bias,fc1_weight,fc1_bias,fc2_weight,fc2_bias]
+    def sub_forward(self,weight_list,x,ind):
+        '''
+        The forward pass for individual sub CNN
+        :param weight_list: list of Tensor containing correct weight dimension
+        :param x: input image with size :math:`N x num_channel x height x width`
+        :param ind: The indicator for which CNN to evaluate
+        :return: Tensor with size :math:`N x 10`
+        '''
+        conv1_output=F.max_pool2d(F.relu(F.conv2d(x,weight_list[0][ind],weight_list[1][ind])),2)
+        conv2_output=F.max_pool2d(F.relu(F.conv2d(conv1_output,weight_list[2][ind],weight_list[3][ind])),2)
+        x_fc=conv2_output.view(-1,self.flat_size)
+        fc1_output=F.relu(F.linear(x_fc,weight_list[4][ind],weight_list[5][ind]))
+        fc2_output=F.relu(F.linear(fc1_output,weight_list[6][ind],weight_list[7][ind]))
+        return fc2_output
+    def forward(self,x,weight):
+        '''
+        The is to compute log probability for all CNN
+        :param x: image with size :math: `N x num_channel x height x width`
+        :param weight: weight tensor with size :math:`num_CNN x total dimension`
+        :return: log_prob_all with size :math:`num_CNN x N x 10`
+        '''
+        # split the weight
+        weight_list=self.split_dimension(weight)
+        # evaluations
+        for ind in range(self.num_CNN):
+            out_CNN=self.sub_forward(weight_list,x,ind)
+            log_prob = F.log_softmax(out_CNN, dim=1)
+            if ind==0:
+                log_prob_all=torch.unsqueeze(log_prob,dim=0)
+            else:
+                log_prob_all=torch.stack((log_prob_all,log_prob),dim=0)
+        return log_prob_all
+    def get_dimension(self):
+        '''
+        Compute the total dimension needed for weight tensor
+        :return: total dimension needed
+        '''
+        conv1_size = self.out_channel * self.num_channel * self.filter_size ** 2
+        conv2_size = self.out_channel * self.out_channel * self.filter_size ** 2
+        fc1_size = self.flat_size * self.fc_size
+        fc1_bias_size = self.fc_size
+        fc2_size = self.fc_size * 10
+        fc2_bias_size = 10
+        return conv1_size+self.out_channel+conv2_size+self.out_channel+fc1_size+fc1_bias_size+fc2_size+fc2_bias_size
+    def grad_CNN(self,x,y,weight,data_N,coef=1.,sigma=22,flag_retain=False):
+        '''
+        This compute the necessary statistics for sampling and optimizer
+        :param x: Image with size seen before
+        :param y: label: should be one-hot with size :math:`num_CNN x N x 10`
+        :param weight: weight tensor with size seen before
+        :param data_N: The total number of training data
+        :param coef: This is the correction term for dimensionality mismatch between training and testing task
+        :param sigma: Variance for prior
+        :param flag_retain: Whether to retain the graph
+        :return: Gradient, modified Gradient, energy, modified energy
+        '''
+        y_= torch.unsqueeze(y, dim=0).repeat(self.num_CNN, 1, 1)
+        prob_out=data_N*torch.mean(torch.sum(y_*self.forawrd(x,weight),dim=2),dim=1,keepdim=True) # num_CNN x 1
+        prior_prob=torch.sum(float(-0.5*np.log(2.*3.1415926*(sigma**2)))-(weight**2)/(2*(sigma**2)),dim=1,keepdim=True)#num_chain x 1
+        # Compute the gradient
+        dtheta_data = grad(prob_out, weight, torch.ones(prob_out.data.shape), allow_unused=True, retain_graph=flag_retain)[0]
+        dtheta_prior = -weight / ((sigma ** 2))
+
+        G=-(dtheta_data+dtheta_prior)
+        G_M=-(dtheta_data+coef*dtheta_prior)
+        E=prob_out+prior_prob
+        E_M=prob_out+coef*prior_prob
+        return G,G_M,E,E_M
+    def predict(self,x,weight):
+        '''
+        The is to give the prediction based on the averaged model
+        :param x: Image
+        :param weight: weight tensor
+        :return: the log probability of the averaged model
+        '''
+        out_log = logsumexp(self.forward(x, weight), dim=0) - float(np.log(self.num_CNN))
+        return out_log
+
+
+def logsumexp(inputs, dim=None, keepdim=False):
+    """Numerically stable logsumexp.
+
+    Args:
+        inputs: A Variable with any shape.
+        dim: An integer.
+        keepdim: A boolean.
+
+    Returns:
+        Equivalent of log(sum(exp(inputs), dim=dim, keepdim=keepdim)).
+    """
+    # For a 1-D array x (any array along a single dimension),
+    # log sum exp(x) = s + log sum exp(x - s)
+    # with s = max(x) being a common choice.
+    if dim is None:
+        inputs = inputs.view(-1)
+        dim = 0
+    s, _ = torch.max(inputs, dim=dim, keepdim=True)
+    outputs = s + (inputs - s).exp().sum(dim=dim, keepdim=True).log()
+    if not keepdim:
+        outputs = outputs.squeeze(dim)
+    return outputs
+
+
+
+
+
+

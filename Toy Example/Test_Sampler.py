@@ -30,7 +30,7 @@ cudnn.benchmark = True
 parser = argparse.ArgumentParser(description='Test the trained Sampler')
 
 ###### GPU settings ########
-parser.add_argument('--gpu_id', default='5', type=str)
+parser.add_argument('--gpu_id', default='0', type=str)
 ###### Testing Parameters ##################
 parser.add_argument('--init_pos_range', default=6, type=float)
 parser.add_argument('--init_mom_range', default=0, type=float)

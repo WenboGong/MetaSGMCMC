@@ -5,14 +5,14 @@
       <paths name="paperspace@184.105.185.108:22">
         <serverdata>
           <mappings>
-            <mapping deploy="/Projects/MetaSGMCMC" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/Project/MetaSGMCMC" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
       <paths name="paperspace@184.105.185.108:22 (1)">
         <serverdata>
           <mappings>
-            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/Project/MetaSGMCMC" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

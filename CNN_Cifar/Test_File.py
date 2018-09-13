@@ -26,6 +26,8 @@ from CNN_Module import *
 from Test_Module import *
 from Util import *
 # Set default tensor type in GPU
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]='0'
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
 ###################### Define the Default dataloader ####################
 transform = transforms.Compose(

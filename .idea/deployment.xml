@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="paperspace@184.105.185.108:22 (1)" createEmptyFolders="true">
+  <component name="PublishConfigData" autoUpload="Always" serverName="paperspace@184.105.185.108:22 (1)" createEmptyFolders="true" uploadOnCheckin="6d40474d-2f5d-4084-b97d-189d77ef0871">
     <serverData>
       <paths name="paperspace@184.105.185.108:22">
         <serverdata>
@@ -17,6 +17,7 @@
         </serverdata>
       </paths>
     </serverData>
+    <option name="myUploadOnCheckinName" value="paperspace@184.105.185.108:22 (1)" />
     <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>

@@ -72,9 +72,9 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Scale_G=50,
                                           Scale_D=100,
                                           Offset_D=0,
-                                          Training_Epoch=70,
+                                          Training_Epoch=100,
                                           Sub_Epoch=10,
-                                          Limit_Step=60,
+                                          Limit_Step=100,
                                           TBPTT=15,
                                           Sample_Interval=3,
                                           Mom_Resample=1000000,
@@ -86,7 +86,8 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Clamp_D_Max=10000,
                                           Batch_Size=500,
                                           Saving_Interval=10,
-                                          Roll_Out=0.3
+                                          Roll_Out=0.4,
+                                          Flag_Single_Roll_Out=True
                                           )
 Param=Param_NNSGHMC_Training
 ######################## Define own data-loader ####################
@@ -170,6 +171,8 @@ for ep in range(epoch):
         Adam_D.zero_grad()
 
         flag_roll_out = roll_out(p_roll_out)
+        if Param['Flag Single Roll Out']:
+            flag_roll_out=False
         if flag_roll_out:
             ind = np.random.randint(0, len(state_pos_rep))
             print('Roll Out with starting Acc:%s and NLL:%s'%(Acc_rep[ind][0],Acc_rep[ind][1]))

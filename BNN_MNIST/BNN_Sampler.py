@@ -36,7 +36,7 @@ class SGHMC:
         self.U=BNN_obj
         #self.C=C
         #self.B=B
-    def parallel_sample(self,state_pos,state_mom,loader,data_N,mom_resample=50,num_chain=50,total_step=1000,eps=0.01,alpha=0.01,beta=0.,sigma=1.,interval=100,flag_SGLD=False,test_loader=None,data_len=10000.):
+    def parallel_sample(self,state_pos,state_mom,loader,data_N,mom_resample=50,num_chain=20,total_step=1000,eps=0.01,alpha=0.01,beta=0.,sigma=1.,interval=100,flag_SGLD=False,test_loader=None,data_len=10000.):
         '''
         
         !!!only support diagonal C and B!!!!
@@ -123,7 +123,8 @@ class NN_SGHMC:
         self.Gamma=Gamma
     def parallel_sample(self,state_pos,state_mom,B,loader,data_N,sigma=1.,num_chain=50,total_step=10,limit_step=100,eps=0.1,eps2=0.1,TBPTT_step=10,coef=1.,sample_interval=3,mom_resample=2000000,mom_scale=1.,mode_train=True,const_Q=0.,const_D=0.,flag_finite=False,test_loader=None,data_len=10000.):
         '''
-        
+
+
         B is the estimated noise matrix 
         state_pos is chain x dim
         state_mom is chain x dim

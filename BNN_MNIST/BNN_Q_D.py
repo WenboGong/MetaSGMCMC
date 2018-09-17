@@ -72,7 +72,7 @@ class parallel_Q_eff:
         state_pos=Variable(state_pos.data,requires_grad=True) # num_chain x dim
         state_mom=Variable(state_mom.data,requires_grad=True)/self.dim_pen_p # num_chain x dim
 
-        U_value=Variable(energy_rep.data)/self.dim_pen #num_chain x 1 
+        U_value=Variable(energy_rep.data)/self.dim_pen #num_chain x dim
         #U_value=U_value.repeat(1,self.dim)# num_chain x dim 
               
         

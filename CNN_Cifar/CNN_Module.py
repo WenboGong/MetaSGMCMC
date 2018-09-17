@@ -143,7 +143,7 @@ class Parallel_CNN:
             if ind==0:
                 log_prob_all=torch.unsqueeze(log_prob,dim=0)
             else:
-                log_prob_all=torch.stack((log_prob_all,log_prob),dim=0)
+                log_prob_all=torch.cat((log_prob_all,torch.unsqueeze(log_prob,dim=0)),dim=0)
         return log_prob_all
     def get_dimension(self):
         '''
@@ -170,11 +170,15 @@ class Parallel_CNN:
         :return: Gradient, modified Gradient, energy, modified energy
         '''
         y_= torch.unsqueeze(y, dim=0).repeat(self.num_CNN, 1, 1)
-        prob_out=data_N*torch.mean(torch.sum(y_*self.forawrd(x,weight),dim=2),dim=1,keepdim=True) # num_CNN x 1
+        prob_out=data_N*torch.mean(torch.sum(y_*self.forward(x,weight),dim=2),dim=1,keepdim=True) # num_CNN x 1
         prior_prob=torch.sum(float(-0.5*np.log(2.*3.1415926*(sigma**2)))-(weight**2)/(2*(sigma**2)),dim=1,keepdim=True)#num_chain x 1
         # Compute the gradient
-        dtheta_data = grad(prob_out, weight, torch.ones(prob_out.data.shape), allow_unused=True, retain_graph=flag_retain)[0]
+        dtheta_data = grad(prob_out, weight, torch.ones(prob_out.data.shape), allow_unused=False, retain_graph=flag_retain)[0]
         dtheta_prior = -weight / ((sigma ** 2))
+
+        # loss = nn.CrossEntropyLoss()
+        # loss_output = loss(torch.squeeze(self.forward(x,weight)), y_orig)
+        # loss_output.backward(retain_graph=True)
 
         G=-(dtheta_data+dtheta_prior)
         G_M=-(dtheta_data+coef*dtheta_prior)
@@ -216,7 +220,50 @@ def logsumexp(inputs, dim=None, keepdim=False):
     return outputs
 
 
+class MLP(nn.Module):
+    '''
+    NN for Q matrix
+    '''
+    def __init__(self, input_dim, hidden, out_size=1):
+        super(MLP, self).__init__()
+        self.input_dim = input_dim
+        self.hidden = hidden
+        self.out_func = nn.Linear(hidden, out_size)
+        self.features = nn.Sequential(
+            nn.Linear(input_dim, hidden),
+            nn.ReLU(),
+
+            nn.Linear(hidden,hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, out_size)
+        )
+
+    def forward(self, x):
+        # out=1+1./(1+torch.exp(10*self.features(x)))
+        # out=1+torch.log((1+0.01*torch.abs(self.features(x))))
+        out = self.features(x)
+        return out
 
 
+class Positive_MLP(nn.Module):
+    '''
+    NN for D matrix
+    '''
+    def __init__(self, input_dim, hidden, out_size=1):
+        super(Positive_MLP, self).__init__()
+        self.input_dim = input_dim
+        self.hidden = hidden
+        self.out_func = nn.Linear(hidden, out_size)
+        self.features = nn.Sequential(
+            nn.Linear(input_dim, hidden),
+            nn.ReLU(),
+            nn.Linear(hidden,hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, out_size),
+        )
+
+    def forward(self, x):
+        out = torch.abs(self.features(x))
+        return out
 
 

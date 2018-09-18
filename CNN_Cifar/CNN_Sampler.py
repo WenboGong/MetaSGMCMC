@@ -174,7 +174,7 @@ class NNSGHMC:
                 eps=eps2
             # Run sampler
             for data in enumerate(loader):
-                if (counter+1)%1==0:
+                if (counter+1)%50==0:
                     print('Step:%s'%(counter+1))
                 # Stop if exceeds the step limits for training mode
                 if mode_train==True and (counter+1)%limit_step==0:

@@ -55,7 +55,7 @@ class parallel_Q_eff:
         :return: out_Q,grad_Q_pos,grad_Q_mom,grad_Q
         '''
         # To create separate copy for each input to stop back-propagate through these variable during training
-        state_mom,U_value,grad_U=torch.tensor(state_mom.data,requires_grad=True),torch.tensor(energy.data),torch.tensor(
+        state_mom,U_value,grad_U=torch.tensor(state_mom.data,requires_grad=True),5*torch.tensor(energy.data),5*torch.tensor(
             grad_U.data)
         U_value=U_value.repeat(1,self.total_dim)# num_CNN x total_dim
         # Group input together
@@ -138,7 +138,7 @@ class parallel_D_eff:
 
 
 
-        U_value = torch.tensor(energy.data) # num_chain x 1
+        U_value = 5*torch.tensor(energy.data) # num_chain x 1
         U_value = U_value.repeat(1, self.total_dim)  # num_chain x total_dim
         grad_U = self.grad_U_scale * torch.tensor(grad_U.data)  ### num_chain x total_dim
         # Now form the input to NN

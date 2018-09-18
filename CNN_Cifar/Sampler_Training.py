@@ -69,12 +69,12 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Step_Size_2=eps2,
                                           Offset_Q=0,
                                           Scale_Q_D=Scale_Q_D,
-                                          Scale_G=50,
+                                          Scale_G=100,
                                           Scale_D=70,
                                           Offset_D=0,
                                           Training_Epoch=100,
                                           Sub_Epoch=10,
-                                          Limit_Step=60,
+                                          Limit_Step=100,
                                           TBPTT=15,
                                           Sample_Interval=3,
                                           Mom_Resample=1000000,
@@ -102,7 +102,7 @@ test_loader_seq=DataLoader(Test_data,batch_size=10000, shuffle=False)
 ##################### Define parameters #####################
 torch.manual_seed(Param['Random Seed'])
 num_CNN=Param['Num CNN']
-CNN=Parallel_CNN(num_CNN=num_CNN,fc_size=100)
+CNN=Parallel_CNN(num_CNN=num_CNN,fc_size=50,out_channel=8,flat_size=8*6*6)
 Q_MLP=MLP(input_dim=2,hidden=10,out_size=1)
 D_MLP=Positive_MLP(input_dim=3,hidden=10,out_size=1)
 total_dim=CNN.get_dimension()

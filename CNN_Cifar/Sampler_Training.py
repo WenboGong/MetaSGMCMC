@@ -205,7 +205,8 @@ for ep in range(epoch):
         Adam_Q.step()
         Adam_D.step()
 # Save trained model
-if (ep+1)%10==0:
-    torch.save(Q_MLP.state_dict(),'./tmp_model_save/Q_MLP_%s'%(timestr))
-    torch.save(D_MLP.state_dict(),'./tmp_model_save/D_MLP_%s'%(timestr))
-    write_Dict('./tmp_model_save/Param_%s'%(timestr), Param)
+    if (ep+1)%10==0:
+        torch.save(Q_MLP.state_dict(),'./tmp_model_save/Q_MLP_%s_%s'%(timestr,(ep+1)))
+        torch.save(D_MLP.state_dict(),'./tmp_model_save/D_MLP_%s_%s'%(timestr,(ep+1)))
+        if (ep+1)==10:
+            write_Dict('./tmp_model_save/Param_%s'%(timestr), Param)

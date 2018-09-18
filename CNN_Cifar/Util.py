@@ -85,6 +85,7 @@ def GenerateParameters(Type,**kwargs):
         Param['Saving Interval']=kwargs['Saving_Interval']
         Param['Roll Out']=kwargs['Roll_Out']
         Param['Flag Single Roll Out']=kwargs['Flag_Single_Roll_Out']
+        Param['Sub Sample Num']=kwargs['Sub_Sample_Num']
 
 
     return Param

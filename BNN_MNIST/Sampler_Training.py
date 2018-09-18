@@ -112,5 +112,3 @@ for ep in range(epoch):
         torch.save(Q_MLP.state_dict(), './tmp_model_save/Q_state_batch_500_baseline_50D_70G_step_0.007_100ep_broad_0.2_ep%s_Adam_0.0015'%(ep+1))
         torch.save(D_MLP.state_dict(), './tmp_model_save/D_state_batch_500_baseline_50D_70G_step_0.007_100ep_broad_0.2_ep%s_Adam_0.0015'%(ep+1))
 
-# torch.save(Q_MLP.state_dict(), './Q_state_batch_500_baseline_10D_70G_step_0.01_40ep_broad_0.2_70epoch')
-# torch.save(D_MLP.state_dict(), './D_state_batch_500_baseline_10D_70G_step_0.01_40ep_broad_0.2_70epoch')

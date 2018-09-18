@@ -128,7 +128,7 @@ class NNSGHMC:
         self.Gamma=Gamma
         self.total_dim=self.CNN.get_dimension()
     def parallel_sample(self,state_pos,state_mom,B,loader,data_N,sigma=1.,num_CNN=20,total_step=10,limit_step=10000,eps=0.1,eps2=0.1,
-                        TBPTT_step=20,coef=1.,sample_interval=10,mom_resample=100000,mode_train=True,
+                        TBPTT_step=20,coef=1.,sample_interval=10,sub_sample_number=8,mom_resample=100000,mode_train=True,
                         test_loader=None,data_len=10000.):
         '''
         This is to run the sampler dynamics.
@@ -164,6 +164,7 @@ class NNSGHMC:
         state_mom_list=[]
         counter = 0
         counter_ELBO=0
+        state_list_in_chain=[] # Store samples for In-Chain Loss
         # Run sampler
         for time_t in range(total_step):
             if (time_t+1)%1==0:
@@ -173,7 +174,7 @@ class NNSGHMC:
                 eps=eps2
             # Run sampler
             for data in enumerate(loader):
-                if (counter+1)%50==0:
+                if (counter+1)%1==0:
                     print('Step:%s'%(counter+1))
                 # Stop if exceeds the step limits for training mode
                 if mode_train==True and (counter+1)%limit_step==0:
@@ -200,7 +201,16 @@ class NNSGHMC:
                 if (counter + 1) % TBPTT_step == 0:
                     state_pos = torch.tensor(state_pos.data, requires_grad=True)
                     state_mom = torch.tensor(state_mom.data, requires_grad=True)
-                    A=1
+                    # Compute In Chain Loss
+                    if mode_train == True:
+                        print('In Chain Loss')
+                        grad_ELBO_In_Chain(self.CNN, x, y, data_N, state_list_in_chain, sub_sample_number=sub_sample_number, sigma=sigma)
+
+                        # Clear In Chain Sample Storage
+                        state_list_in_chain = []
+
+
+
                 # Momentum Resampling
                 if (counter + 1) % mom_resample == 0:
                     state_mom=0.001*torch.randn(num_CNN,self.total_dim,requires_grad=True)
@@ -234,13 +244,15 @@ class NNSGHMC:
                     # Update Position
                 if mode_train == True:
                     state_pos = state_pos + eps * Q_out * state_mom + eps * tau_out1  # chain x dim
+                    # Store for in chain loss
+                    state_list_in_chain.append(state_pos)
                 else:
                     state_pos = torch.tensor(state_pos.data + eps * Q_out_dash.data * state_mom.data + eps * tau_out1.data,
                                          requires_grad=True)
                 # Accumulate the gradients
                 if mode_train==True and (counter+1)%sample_interval==0:
-                    #raise NotImplementedError
-                    counter_ELBO = grad_ELBO(state_pos,self.CNN,x,y,data_N,counter_ELBO,sigma=sigma)
+                    # Cross Chain Loss
+                    counter_ELBO = grad_ELBO(state_pos,self.CNN,x,y,data_N,counter_ELBO,limit_step,sample_interval,sigma=sigma)
 
                 elif mode_train==False and (counter+1)%sample_interval==0:
                     state_list.append(torch.tensor(state_pos.data))

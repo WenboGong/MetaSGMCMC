@@ -101,16 +101,16 @@ class Parallel_CNN:
         dim_tracker+=fc2_size
         fc2_bias_raw_tensor=weight[:,dim_tracker:dim_tracker+fc2_bias_size]
         # reshape
-        conv1_weight=conv1_raw_tensor.view(self.num_CNN,self.out_channel,self.num_channel,self.filter_size,self.filter_size)
-        conv1_bias=conv1_bias_raw_tensor.view(self.num_CNN,self.out_channel)
-        conv2_weight = conv2_raw_tensor.view(self.num_CNN, self.out_channel, self.out_channel, self.filter_size,
+        conv1_weight=conv1_raw_tensor.view(-1,self.out_channel,self.num_channel,self.filter_size,self.filter_size)
+        conv1_bias=conv1_bias_raw_tensor.view(-1,self.out_channel)
+        conv2_weight = conv2_raw_tensor.view(-1, self.out_channel, self.out_channel, self.filter_size,
                                              self.filter_size)
-        conv2_bias=conv2_bias_raw_tensor.view(self.num_CNN,self.out_channel)
+        conv2_bias=conv2_bias_raw_tensor.view(-1,self.out_channel)
 
-        fc1_weight=fc1_raw_tensor.view(self.num_CNN,self.fc_size,self.flat_size)
-        fc1_bias=fc1_bias_raw_tensor.view(self.num_CNN,self.fc_size)
-        fc2_weight=fc2_raw_tensor.view(self.num_CNN,10,self.fc_size)
-        fc2_bias=fc2_bias_raw_tensor.view(self.num_CNN,10)
+        fc1_weight=fc1_raw_tensor.view(-1,self.fc_size,self.flat_size)
+        fc1_bias=fc1_bias_raw_tensor.view(-1,self.fc_size)
+        fc2_weight=fc2_raw_tensor.view(-1,10,self.fc_size)
+        fc2_bias=fc2_bias_raw_tensor.view(-1,10)
 
         return [conv1_weight,conv1_bias,conv2_weight,conv2_bias,fc1_weight,fc1_bias,fc2_weight,fc2_bias]
     def sub_forward(self,weight_list,x,ind):
@@ -137,14 +137,52 @@ class Parallel_CNN:
         # split the weight
         weight_list=self.split_dimension(weight)
         # evaluations
-        for ind in range(self.num_CNN):
+        total_iter=weight.shape[0]
+        for ind in range(total_iter):
+            #print(ind)
             out_CNN=self.sub_forward(weight_list,x,ind)
             log_prob = F.log_softmax(out_CNN, dim=1)
             if ind==0:
                 log_prob_all=torch.unsqueeze(log_prob,dim=0)
             else:
                 log_prob_all=torch.cat((log_prob_all,torch.unsqueeze(log_prob,dim=0)),dim=0)
+
         return log_prob_all
+    def part_free_grad_CNN(self,x,y,weight,data_N,coef=1.,sigma=22.,flag_retain=False):
+        '''
+        This method
+        :param x:
+        :param y:
+        :param weight:
+        :param data_N:
+        :param coef:
+        :param sigma:
+        :param flag_retain:
+        :return:
+        '''
+        # split the weight
+        weight_list = self.split_dimension(weight)
+        # evaluations
+        total_iter = weight.shape[0]
+        #y_ = torch.unsqueeze(y, dim=0).repeat(sample_size, 1, 1)
+        for ind in range(total_iter):
+            #print(ind)
+            out_CNN = self.sub_forward(weight_list, x, ind) # N x 10
+            log_prob = data_N*torch.mean(torch.sum(y*F.log_softmax(out_CNN, dim=1),dim=1,keepdim=True),dim=0) #
+            grad_log_prob=grad(log_prob,weight,allow_unused=False)[0][ind:ind+1,:]
+
+            if ind == 0:
+                log_prob_all = torch.unsqueeze(log_prob, dim=0)
+                grad_list=torch.tensor(grad_log_prob.data)
+                del grad_log_prob
+            else:
+                log_prob_all = torch.cat((log_prob_all, torch.unsqueeze(log_prob, dim=0)), dim=0)
+                grad_list=torch.cat((grad_list,grad_log_prob),dim=0)
+                del grad_log_prob
+        dtheta_prior = -weight / ((sigma ** 2))
+        G=-(grad_list+dtheta_prior)
+        return G
+
     def get_dimension(self):
         '''
         Compute the total dimension needed for weight tensor
@@ -161,7 +199,7 @@ class Parallel_CNN:
         '''
         This compute the necessary statistics for sampling and optimizer
         :param x: Image with size seen before
-        :param y: label: should be one-hot with size :math:`num_CNN x N x 10`
+        :param y: label: should be one-hot with size :math:`N x 10`
         :param weight: weight tensor with size seen before
         :param data_N: The total number of training data
         :param coef: This is the correction term for dimensionality mismatch between training and testing task
@@ -169,7 +207,8 @@ class Parallel_CNN:
         :param flag_retain: Whether to retain the graph
         :return: Gradient, modified Gradient, energy, modified energy
         '''
-        y_= torch.unsqueeze(y, dim=0).repeat(self.num_CNN, 1, 1)
+        sample_size=weight.shape[0]
+        y_= torch.unsqueeze(y, dim=0).repeat(sample_size, 1, 1)
         prob_out=data_N*torch.mean(torch.sum(y_*self.forward(x,weight),dim=2),dim=1,keepdim=True) # num_CNN x 1
         prior_prob=torch.sum(float(-0.5*np.log(2.*3.1415926*(sigma**2)))-(weight**2)/(2*(sigma**2)),dim=1,keepdim=True)#num_chain x 1
         # Compute the gradient
@@ -192,7 +231,8 @@ class Parallel_CNN:
         :param weight: weight tensor
         :return: the log probability of the averaged model
         '''
-        out_log = logsumexp(self.forward(x, weight), dim=0) - float(np.log(self.num_CNN))
+        sample_size=weight.shape[0]
+        out_log = logsumexp(self.forward(x, weight), dim=0) - float(np.log(sample_size))
         return out_log
 
 

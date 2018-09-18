@@ -64,17 +64,17 @@ Scale_Q_D=float(0.01/eps2)
 Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Random_Seed=10,
                                           Optimizer_Step_Size=0.003,
-                                          Optimizer_Betas=(0.5,0.9),
+                                          Optimizer_Betas=(0.9,0.99),
                                           Step_Size_1=eps1,
                                           Step_Size_2=eps2,
-                                          Offset_Q=0.3,
+                                          Offset_Q=0,
                                           Scale_Q_D=Scale_Q_D,
                                           Scale_G=50,
-                                          Scale_D=100,
+                                          Scale_D=70,
                                           Offset_D=0,
                                           Training_Epoch=100,
                                           Sub_Epoch=10,
-                                          Limit_Step=100,
+                                          Limit_Step=60,
                                           TBPTT=15,
                                           Sample_Interval=3,
                                           Mom_Resample=1000000,
@@ -87,7 +87,9 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Batch_Size=500,
                                           Saving_Interval=10,
                                           Roll_Out=0.4,
-                                          Flag_Single_Roll_Out=True
+                                          Flag_Single_Roll_Out=True,
+                                          Sub_Sample_Num=5
+
                                           )
 Param=Param_NNSGHMC_Training
 ######################## Define own data-loader ####################
@@ -148,7 +150,7 @@ for ep in range(epoch):
     # Drawing samples
     state_list,state_mom_list,counter_ELBO=NNSGHMC_obj.parallel_sample(weight_init,state_mom_init,B,train_loader,data_N,
                                                         sigma,num_CNN,sub_epoch,Param['Limit Step'],eps1,eps2,
-                                                        Param['TBPTT'],coef,Param['Sample Interval'],Param['Mom Resample'],
+                                                        Param['TBPTT'],coef,Param['Sample Interval'],Param['Sub Sample Num'],Param['Mom Resample'],
                                                         True,None,10000.)
 
     # Store in the rep
@@ -171,7 +173,9 @@ for ep in range(epoch):
         Adam_D.zero_grad()
 
         flag_roll_out = roll_out(p_roll_out)
+
         if Param['Flag Single Roll Out']:
+            # Single Roll Out
             flag_roll_out=False
         if flag_roll_out:
             ind = np.random.randint(0, len(state_pos_rep))
@@ -190,6 +194,7 @@ for ep in range(epoch):
                                                                                Param['Limit Step'], eps1, eps2,
                                                                                Param['TBPTT'], coef,
                                                                                Param['Sample Interval'],
+                                                                               Param['Sub Sample Num'],
                                                                                Param['Mom Resample'],
                                                                                True, None, 10000.)
 
@@ -204,9 +209,9 @@ for ep in range(epoch):
         # Update Parameter
         Adam_Q.step()
         Adam_D.step()
-# Save trained model
-    if (ep+1)%10==0:
+    # Save trained model
+    if (ep+1)%Param['Saving Interval']==0:
         torch.save(Q_MLP.state_dict(),'./tmp_model_save/Q_MLP_%s_%s'%(timestr,(ep+1)))
         torch.save(D_MLP.state_dict(),'./tmp_model_save/D_MLP_%s_%s'%(timestr,(ep+1)))
-        if (ep+1)==10:
+        if (ep+1)==Param['Saving Interval']:
             write_Dict('./tmp_model_save/Param_%s'%(timestr), Param)

@@ -18,6 +18,7 @@ import copy
 import matplotlib
 import operator
 import json
+import gpustat
 from torch.utils.data import Dataset, DataLoader
 # Import Custom packages
 from Cifar_Dataloader import *
@@ -27,16 +28,17 @@ from Util import *
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]='0'
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
+def show_memusage(device=0):
+    gpu_stats = gpustat.GPUStatCollection.new_query()
+    item = gpu_stats.jsonify()["gpus"][device]
+    print("{}/{}".format(item["memory.used"], item["memory.total"]))
 
-#######################################################################################################################
-x = torch.tensor([1, 2], requires_grad=True, dtype=torch.float)
-y = torch.tensor([1, 2], requires_grad=True, dtype=torch.float)
+A=torch.randn(112,65000,requires_grad=True)
+B=torch.randn(112,65000,requires_grad=True)
+C=torch.cat((A,B),dim=0)
+CCT=torch.mm(C,C.t())
 
-x = x ** 2
-y = y ** 2
 
-z=torch.sum(x+y)
 
-z.backward()
-
-assert x.grad is None and y.grad is None
+# prints currently alive Tensors and Variables
+show_memusage()

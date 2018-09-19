@@ -68,25 +68,47 @@ def DQContour(Q_MLP, D_MLP, dim=[0, 1], range1=[-2.5, 2.5], range2=[-2.5, 2.5], 
 
         X_tensor = Variable(torch.from_numpy(X_grid).float().cuda())
 
-        out = np.squeeze(np.abs(50 * D_MLP.forward(X_tensor).cpu().data.numpy()))
+        out = np.squeeze(np.abs(5 * D_MLP.forward(X_tensor).cpu().data.numpy()))
         return X1, X2, out
 
+model_str='20180919-073244_30'
+model_load_path='./tmp_model_save/'
 
 
 
+################################# Generate DQ Contour ##############################
 
+
+# Load Model
 Q_MLP=MLP(input_dim=2,hidden=10,out_size=1)
 D_MLP=Positive_MLP(input_dim=3,hidden=10,out_size=1)
 
-Q_MLP.load_state_dict(torch.load('./tmp_model_save/Q_MLP_20180918-130828_10'))
-D_MLP.load_state_dict(torch.load('./tmp_model_save/D_MLP_20180918-130828_10'))
+Q_MLP.load_state_dict(torch.load('%sQ_MLP_%s'%(model_load_path,model_str)))
+D_MLP.load_state_dict(torch.load('%sD_MLP_%s'%(model_load_path,model_str)))
 
-X1,X2,out=DQContour(Q_MLP,D_MLP,range1=[0,3],range2=[-5,5])
-X1_D,X2_D,out_D=DQContour(Q_MLP,D_MLP,dim=[0,1],range1=[0,3],range2=[-5,5],range3=1,flag_D=True)
+# Generate Contour
+fig,(ax1,ax2,ax3)=plt.subplots(1,3,figsize=(18,5))
+# Ax1 with Q Contour
+X1,X2,out=DQContour(Q_MLP,D_MLP,range1=[0,15],range2=[-2,2])
+CS1=ax1.contourf(X1,X2,out,50)
+fig.colorbar(CS1,ax=ax1)
+# Ax2 with D Contour 0,1 dim
+X1_D,X2_D,out_D=DQContour(Q_MLP,D_MLP,dim=[0,1],range1=[0,15],range2=[-2,2],range3=0.5,flag_D=True)
+CS2=ax2.contourf(X1_D,X2_D,out_D,50)
+fig.colorbar(CS2,ax=ax2)
+# Ax2 with D Contour 1,2 dim
+X1_D,X2_D,out_D=DQContour(Q_MLP,D_MLP,dim=[1,2],range1=[-2,2],range2=[-2,2],range3=-5,flag_D=True)
+CS3=ax3.contourf(X1_D,X2_D,out_D,50)
+fig.colorbar(CS3,ax=ax3)
+plt.savefig('./Results/Countour_')
 
-fig1,ax1=plt.subplots()
 
-#CS=ax1.contourf(X1,X2,out,50)
-CS=ax1.contourf(X1_D,X2_D,out_D,50)
-cbar=fig1.colorbar(CS)
-plt.savefig('./Results/Countour_D_20180918-130828_10.png')
+# #X1,X2,out=DQContour(Q_MLP,D_MLP,range1=[0,15],range2=[-5,5])
+# X1_D,X2_D,out_D=DQContour(Q_MLP,D_MLP,dim=[0,1],range1=[4,15],range2=[-0.5,0.5],range3=0.3,flag_D=True)
+#
+# fig1,ax1=plt.subplots()
+#
+# #CS=ax1.contourf(X1,X2,out,50)
+# CS=ax1.contourf(X1_D,X2_D,out_D,50)
+# cbar=fig1.colorbar(CS)
+plt.savefig('./Results/Countour_%s.png'%(model_str))

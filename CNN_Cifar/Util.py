@@ -86,6 +86,29 @@ def GenerateParameters(Type,**kwargs):
         Param['Roll Out']=kwargs['Roll_Out']
         Param['Flag Single Roll Out']=kwargs['Flag_Single_Roll_Out']
         Param['Sub Sample Num']=kwargs['Sub_Sample_Num']
+        Param['Roll Out Mom Resample']=kwargs['Roll_Out_Mom_Resample']
+        Param['Flag In Chain']=kwargs['Flag_In_Chain']
+    if Type=='NNSGHMC Test':
+        Param['Type'] = Type
+        Param['Random Seed'] = kwargs['Random_Seed']
+        Param['Step Size 1'] = kwargs['Step_Size_1']
+        Param['Step Size 2'] = kwargs['Step_Size_2']
+        Param['Offset Q'] = kwargs['Offset_Q']
+        Param['Scale Q D'] = kwargs['Scale_Q_D']
+        Param['Scale D'] = kwargs['Scale_D']
+        Param['Scale G'] = kwargs['Scale_G']
+        Param['Offset D'] = kwargs['Offset_D']
+        Param['Epoch'] = kwargs['Epoch']
+        Param['Sample Interval'] = kwargs['Sample_Interval']
+        Param['Mom Resample'] = kwargs['Mom_Resample']
+        Param['Num CNN'] = kwargs['Num_CNN']
+        Param['Noise Estimation'] = kwargs['Noise_Estimation']
+        Param['Sigma'] = kwargs['Sigma']
+        Param['Clamp Q'] = kwargs['Clamp_Q']
+        Param['Clamp D Min'] = kwargs['Clamp_D_Min']
+        Param['Clamp D Max'] = kwargs['Clamp_D_Max']
+        Param['Batch Size'] = kwargs['Batch_Size']
+        Param['Coef']=kwargs['Coef']
 
 
     return Param

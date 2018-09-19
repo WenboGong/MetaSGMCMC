@@ -124,7 +124,7 @@ def grad_ELBO_In_Chain(CNN,x,y,data_N,state_list_in_chain,sub_sample_number=8,si
     neg_dlogP_dW=CNN.part_free_grad_CNN(x, y, concat_vector_copy, data_N, coef=1., sigma=sigma, flag_retain=False)
 
     dlogP_dW = torch.tensor((-neg_dlogP_dW).data)  # cat length x dim
-    loss_1 = 1./sub_sample_number*torch.mean(dlogP_dW * concat_vector, dim=0, keepdim=True)  # 1 x dim
+    loss_1 = torch.mean(dlogP_dW * concat_vector, dim=0, keepdim=True)  # 1 x dim
     (-loss_1).backward(torch.ones(loss_1.data.shape), retain_graph=True)
     ########## Evaluate Entropy gradient ###############
     bandwidth = torch.tensor((sample_median(concat_vector) / 2.).data)
@@ -132,7 +132,7 @@ def grad_ELBO_In_Chain(CNN,x,y,data_N,state_list_in_chain,sub_sample_number=8,si
 
 
 
-    loss_2 = 1./sub_sample_number*torch.mean(dlogQ_dW * concat_vector, dim=0, keepdim=True)  # 1 x dim
+    loss_2 = torch.mean(dlogQ_dW * concat_vector, dim=0, keepdim=True)  # 1 x dim
     loss_2.backward(torch.ones(loss_2.data.shape), retain_graph=False)
     return None
 

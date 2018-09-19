@@ -88,7 +88,10 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Saving_Interval=10,
                                           Roll_Out=0.4,
                                           Flag_Single_Roll_Out=True,
-                                          Sub_Sample_Num=5
+                                          Sub_Sample_Num=5, # if 0, need to turn off the in Chain loss in CNN_Sampler.py
+                                          Roll_Out_Mom_Resample=True,
+                                          Flag_In_Chain=True
+
 
                                           )
 Param=Param_NNSGHMC_Training
@@ -142,16 +145,19 @@ for ep in range(epoch):
         ind=np.random.randint(0,len(state_pos_rep))
         print('Roll Out with Starting Acc:%s and NLL:%s'%(Acc_rep[ind][0],Acc_rep[ind][1]))
         weight_init=torch.tensor(state_pos_rep[ind],requires_grad=True)
-        state_mom_init=torch.tensor(state_mom_rep[ind],requires_grad=True)
+        if Param['Roll Out Mom Resample']==False:
+            state_mom_init=torch.tensor(state_mom_rep[ind],requires_grad=True)
+        else:
+            state_mom_init=0*torch.randn(num_CNN,total_dim,requires_grad=True)
     else:
         weight_init = 0.1 * torch.randn(num_CNN, total_dim,requires_grad=True)
-        state_mom_init=0.01* torch.randn(num_CNN,total_dim,requires_grad=True)
+        state_mom_init=0.* torch.randn(num_CNN,total_dim,requires_grad=True)
 
     # Drawing samples
     state_list,state_mom_list,counter_ELBO=NNSGHMC_obj.parallel_sample(weight_init,state_mom_init,B,train_loader,data_N,
                                                         sigma,num_CNN,sub_epoch,Param['Limit Step'],eps1,eps2,
                                                         Param['TBPTT'],coef,Param['Sample Interval'],Param['Sub Sample Num'],Param['Mom Resample'],
-                                                        True,None,10000.)
+                                                        True,None,10000.,Param['Flag In Chain'])
 
     # Store in the rep
     state_pos_rep.append(torch.tensor(state_list[-1].data))
@@ -181,7 +187,10 @@ for ep in range(epoch):
             ind = np.random.randint(0, len(state_pos_rep))
             print('Roll Out with starting Acc:%s and NLL:%s'%(Acc_rep[ind][0],Acc_rep[ind][1]))
             weight_init = torch.tensor(state_pos_rep[ind], requires_grad=True)
-            state_mom_init = torch.tensor(state_mom_rep[ind], requires_grad=True)
+            if Param['Roll Out Mom Resample']==False:
+                state_mom_init = torch.tensor(state_mom_rep[ind], requires_grad=True)
+            else:
+                state_mom_init=0*torch.randn(num_CNN,total_dim,requires_grad=True)
 
         else:
 
@@ -196,7 +205,7 @@ for ep in range(epoch):
                                                                                Param['Sample Interval'],
                                                                                Param['Sub Sample Num'],
                                                                                Param['Mom Resample'],
-                                                                               True, None, 10000.)
+                                                                               True, None, 10000.,Param['Flag In Chain'])
 
         # Store in the rep
         state_pos_rep.append(torch.tensor(state_list[-1].data))

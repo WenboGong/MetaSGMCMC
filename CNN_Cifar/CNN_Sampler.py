@@ -129,7 +129,7 @@ class NNSGHMC:
         self.total_dim=self.CNN.get_dimension()
     def parallel_sample(self,state_pos,state_mom,B,loader,data_N,sigma=1.,num_CNN=20,total_step=10,limit_step=10000,eps=0.1,eps2=0.1,
                         TBPTT_step=20,coef=1.,sample_interval=10,sub_sample_number=8,mom_resample=100000,mode_train=True,
-                        test_loader=None,data_len=10000.):
+                        test_loader=None,data_len=10000.,flag_in_chain=False):
         '''
         This is to run the sampler dynamics.
 
@@ -164,7 +164,8 @@ class NNSGHMC:
         state_mom_list=[]
         counter = 0
         counter_ELBO=0
-        state_list_in_chain=[] # Store samples for In-Chain Loss
+        if flag_in_chain==True:
+            state_list_in_chain=[] # Store samples for In-Chain Loss
         # Run sampler
         for time_t in range(total_step):
             if (time_t+1)%1==0:
@@ -202,8 +203,9 @@ class NNSGHMC:
                     state_pos = torch.tensor(state_pos.data, requires_grad=True)
                     state_mom = torch.tensor(state_mom.data, requires_grad=True)
                     # Compute In Chain Loss
-                    if mode_train == True:
-                        print('In Chain Loss')
+                    if mode_train == True and flag_in_chain==True:
+                        []#print('In Chain Loss')
+                        print('Q value:%s'%(torch.mean(torch.abs(Q_out)).data.cpu().numpy()))
                         grad_ELBO_In_Chain(self.CNN, x, y, data_N, state_list_in_chain, sub_sample_number=sub_sample_number, sigma=sigma)
 
                         # Clear In Chain Sample Storage
@@ -213,7 +215,7 @@ class NNSGHMC:
 
                 # Momentum Resampling
                 if (counter + 1) % mom_resample == 0:
-                    state_mom=0.001*torch.randn(num_CNN,self.total_dim,requires_grad=True)
+                    state_mom=0.*torch.randn(num_CNN,self.total_dim,requires_grad=True)
                 # Sampler Dynamics
                     # Compute preconditioned matrix
                 Q_out, grad_Q_pos, grad_Q_mom, _ = self.Q.forward(state_mom, mean_energy_mod,
@@ -245,7 +247,8 @@ class NNSGHMC:
                 if mode_train == True:
                     state_pos = state_pos + eps * Q_out * state_mom + eps * tau_out1  # chain x dim
                     # Store for in chain loss
-                    state_list_in_chain.append(state_pos)
+                    if flag_in_chain==True:
+                        state_list_in_chain.append(state_pos)
                 else:
                     state_pos = torch.tensor(state_pos.data + eps * Q_out_dash.data * state_mom.data + eps * tau_out1.data,
                                          requires_grad=True)
@@ -259,7 +262,7 @@ class NNSGHMC:
                 # Add 1 to counter
                 counter+=1
             # Test the accuracy
-            if (time_t+1)%2==0 and type(test_loader)!=type(None):
+            if (time_t+1)%1==0 and type(test_loader)!=type(None):
                 print(Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len))
             # Stop the dynamics
             if mode_train==True and (counter+1)%limit_step==0:

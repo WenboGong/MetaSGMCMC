@@ -204,7 +204,7 @@ class NNSGHMC:
                     state_mom = torch.tensor(state_mom.data, requires_grad=True)
                     # Compute In Chain Loss
                     if mode_train == True and flag_in_chain==True:
-                        []#print('In Chain Loss')
+                        #print('In Chain Loss')
                         print('Q value:%s'%(torch.mean(torch.abs(Q_out)).data.cpu().numpy()))
                         grad_ELBO_In_Chain(self.CNN, x, y, data_N, state_list_in_chain, sub_sample_number=sub_sample_number, sigma=sigma)
 

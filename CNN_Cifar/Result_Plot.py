@@ -71,7 +71,7 @@ def DQContour(Q_MLP, D_MLP, dim=[0, 1], range1=[-2.5, 2.5], range2=[-2.5, 2.5], 
         out = np.squeeze(np.abs(5 * D_MLP.forward(X_tensor).cpu().data.numpy()))
         return X1, X2, out
 
-model_str='20180919-073244_80'
+model_str='20180920-093724_10'
 model_load_path='./tmp_model_save/'
 
 
@@ -100,7 +100,7 @@ fig.colorbar(CS2,ax=ax2)
 X1_D,X2_D,out_D=DQContour(Q_MLP,D_MLP,dim=[1,2],range1=[-2,2],range2=[-2,2],range3=-5,flag_D=True)
 CS3=ax3.contourf(X1_D,X2_D,out_D,50)
 fig.colorbar(CS3,ax=ax3)
-plt.savefig('./Results/Countour_')
+#plt.savefig('./Results/Countour_')
 
 
 # #X1,X2,out=DQContour(Q_MLP,D_MLP,range1=[0,15],range2=[-5,5])

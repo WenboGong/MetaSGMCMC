@@ -84,7 +84,7 @@ def sample_median(samples):
         counter+=1
     med=torch.tensor(torch.Tensor([torch.median(M)]))
     return med
-def grad_ELBO(weight,CNN,x,y,data_N,counter,limit_step,sample_interval,sigma=1.):
+def grad_ELBO(weight,CNN,x,y,data_N,counter,limit_step,sample_interval,sigma=1.,scale_entropy=1.):
     # Need to retain graph??????
     #
     r=float(np.floor((limit_step-1)/sample_interval))
@@ -99,12 +99,12 @@ def grad_ELBO(weight,CNN,x,y,data_N,counter,limit_step,sample_interval,sigma=1.)
     ######### Evaluate entropy gradient
     bandwidth = torch.tensor((sample_median(weight) / 2.).data)
     dlogQ_dW = gradient_estimate_im(weight, bandwidth, lam=0.05)
-    loss_2 = 1./r*torch.mean(dlogQ_dW * weight, dim=0, keepdim=True) # 1 x dim
+    loss_2 = scale_entropy*1./r*torch.mean(dlogQ_dW * weight, dim=0, keepdim=True) # 1 x dim
     loss_2.backward(torch.ones(loss_2.data.shape), retain_graph=True)
     counter=1
 
     return counter
-def grad_ELBO_In_Chain(CNN,x,y,data_N,state_list_in_chain,sub_sample_number=8,sigma=1.):
+def grad_ELBO_In_Chain(CNN,x,y,data_N,state_list_in_chain,sub_sample_number=8,sigma=1.,scale_entropy=1.):
     # Number of chains and total time
     num_CNN=state_list_in_chain[0].shape[0]
     T=float(len(state_list_in_chain))
@@ -132,7 +132,7 @@ def grad_ELBO_In_Chain(CNN,x,y,data_N,state_list_in_chain,sub_sample_number=8,si
 
 
 
-    loss_2 = torch.mean(dlogQ_dW * concat_vector, dim=0, keepdim=True)  # 1 x dim
+    loss_2 = scale_entropy*torch.mean(dlogQ_dW * concat_vector, dim=0, keepdim=True)  # 1 x dim
     loss_2.backward(torch.ones(loss_2.data.shape), retain_graph=False)
     return None
 

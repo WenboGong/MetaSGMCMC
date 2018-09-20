@@ -63,18 +63,18 @@ eps2=float(np.sqrt(0.001/data_N))
 Scale_Q_D=float(0.01/eps2)
 Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Random_Seed=10,
-                                          Optimizer_Step_Size=0.001,
+                                          Optimizer_Step_Size=0.002,
                                           Optimizer_Betas=(0.9,0.99),
                                           Step_Size_1=eps1,
                                           Step_Size_2=eps2,
-                                          Offset_Q=0,
+                                          Offset_Q=0.,
                                           Scale_Q_D=Scale_Q_D,
                                           Scale_G=100,
                                           Scale_D=10,
                                           Offset_D=0,
                                           Training_Epoch=100,
                                           Sub_Epoch=10,
-                                          Limit_Step=100,
+                                          Limit_Step=50,
                                           TBPTT=15,
                                           Sample_Interval=3,
                                           Mom_Resample=1000000,
@@ -90,7 +90,8 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Flag_Single_Roll_Out=True,
                                           Sub_Sample_Num=5, # if 0, need to turn off the in Chain loss in CNN_Sampler.py
                                           Roll_Out_Mom_Resample=False,
-                                          Flag_In_Chain=True
+                                          Flag_In_Chain=True,
+                                          Scale_Entropy=1.
 
 
 
@@ -178,7 +179,7 @@ for ep in range(epoch):
     state_list,state_mom_list,counter_ELBO=NNSGHMC_obj.parallel_sample(weight_init,state_mom_init,B,train_loader,data_N,
                                                         sigma,num_CNN,sub_epoch,Param['Limit Step'],eps1,eps2,
                                                         Param['TBPTT'],coef,Param['Sample Interval'],Param['Sub Sample Num'],Param['Mom Resample'],
-                                                        True,None,10000.,Param['Flag In Chain'],show_ind=ind_chain)
+                                                        True,None,10000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'])
 
     # Store in the rep
     state_pos_rep.append(torch.tensor(state_list[-1].data))
@@ -242,7 +243,7 @@ for ep in range(epoch):
                                                                                Param['Sample Interval'],
                                                                                Param['Sub Sample Num'],
                                                                                Param['Mom Resample'],
-                                                                               True, None, 10000.,Param['Flag In Chain'],show_ind=ind_chain)
+                                                                               True, None, 10000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'])
 
         # Store in the rep
         state_pos_rep.append(torch.tensor(state_list[-1].data))

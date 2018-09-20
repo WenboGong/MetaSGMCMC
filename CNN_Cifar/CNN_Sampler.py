@@ -129,7 +129,7 @@ class NNSGHMC:
         self.total_dim=self.CNN.get_dimension()
     def parallel_sample(self,state_pos,state_mom,B,loader,data_N,sigma=1.,num_CNN=20,total_step=10,limit_step=10000,eps=0.1,eps2=0.1,
                         TBPTT_step=20,coef=1.,sample_interval=10,sub_sample_number=8,mom_resample=100000,mode_train=True,
-                        test_loader=None,data_len=10000.,flag_in_chain=False,show_ind=None):
+                        test_loader=None,data_len=10000.,flag_in_chain=False,show_ind=None,scale_entropy=1.):
         '''
         This is to run the sampler dynamics.
 
@@ -164,6 +164,7 @@ class NNSGHMC:
         state_mom_list=[]
         counter = 0
         counter_ELBO=0
+        flag_show=True
         if flag_in_chain==True:
             state_list_in_chain=[] # Store samples for In-Chain Loss
         # Run sampler
@@ -205,15 +206,17 @@ class NNSGHMC:
                     # Compute In Chain Loss
                     if mode_train == True and flag_in_chain==True:
                         #print('In Chain Loss')
-                        Q_value=torch.mean(torch.abs(Q_out.data),dim=1).data.cpu().numpy()
-                        D_value=torch.mean(torch.abs(D_out.data),dim=1).data.cpu().numpy()
-                        print('Q mean value:%s' % (np.mean(Q_value)))
-                        print('D mean value:%s' % (np.mean(D_value)))
-                        if type(show_ind)!=type(None):
-                            print('Q value:%s'%(Q_value[show_ind]))
-                            print('D value:%s'%(D_value[show_ind]))
+                        if flag_show==True:
+                            Q_value=torch.mean(torch.abs(Q_out.data),dim=1).data.cpu().numpy()
+                            D_value=torch.mean(torch.abs(D_out.data),dim=1).data.cpu().numpy()
+                            print('Q mean value:%s' % (np.mean(Q_value)))
+                            print('D mean value:%s' % (np.mean(D_value)))
+                            flag_show=False
+                            if type(show_ind)!=type(None):
+                                print('Q value:%s'%(Q_value[show_ind]))
+                                print('D value:%s'%(D_value[show_ind]))
 
-                        grad_ELBO_In_Chain(self.CNN, x, y, data_N, state_list_in_chain, sub_sample_number=sub_sample_number, sigma=sigma)
+                        grad_ELBO_In_Chain(self.CNN, x, y, data_N, state_list_in_chain, sub_sample_number=sub_sample_number, sigma=sigma,scale_entropy=scale_entropy)
 
                         # Clear In Chain Sample Storage
                         state_list_in_chain = []
@@ -262,7 +265,7 @@ class NNSGHMC:
                 # Accumulate the gradients
                 if mode_train==True and (counter+1)%sample_interval==0:
                     # Cross Chain Loss
-                    counter_ELBO = grad_ELBO(state_pos,self.CNN,x,y,data_N,counter_ELBO,limit_step,sample_interval,sigma=sigma)
+                    counter_ELBO = grad_ELBO(state_pos,self.CNN,x,y,data_N,counter_ELBO,limit_step,sample_interval,sigma=sigma, scale_entropy=scale_entropy)
 
                 elif mode_train==False and (counter+1)%sample_interval==0:
                     state_list.append(torch.tensor(state_pos.data))

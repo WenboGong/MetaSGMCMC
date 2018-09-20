@@ -88,6 +88,7 @@ def GenerateParameters(Type,**kwargs):
         Param['Sub Sample Num']=kwargs['Sub_Sample_Num']
         Param['Roll Out Mom Resample']=kwargs['Roll_Out_Mom_Resample']
         Param['Flag In Chain']=kwargs['Flag_In_Chain']
+        Param['Scale Entropy']=kwargs['Scale_Entropy']
     if Type=='NNSGHMC Test':
         Param['Type'] = Type
         Param['Random Seed'] = kwargs['Random_Seed']

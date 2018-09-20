@@ -32,13 +32,20 @@ def show_memusage(device=0):
     gpu_stats = gpustat.GPUStatCollection.new_query()
     item = gpu_stats.jsonify()["gpus"][device]
     print("{}/{}".format(item["memory.used"], item["memory.total"]))
+num_CNN=20
+p=0.4
 
-A=torch.randn(112,65000,requires_grad=True)
-B=torch.randn(112,65000,requires_grad=True)
-C=torch.cat((A,B),dim=0)
-CCT=torch.mm(C,C.t())
-
-
-
-# prints currently alive Tensors and Variables
-show_memusage()
+# u_list=np.random.uniform(0,1,20)
+# p=0.4
+# ind_list=(u_list<=p)
+# ind_list=[i for i,x in enumerate(ind_list) if x]
+# A=torch.randn(20,10)
+# B=A[ind_list]
+# print(ind_list)
+# print(A)
+# print(B)
+u_list=torch.rand(num_CNN)
+ind_list=(u_list<=p)
+total_num_replay=torch.sum(ind_list)
+ind_ind=[i for i,p in enumerate(ind_list) if bool(p)]
+A=1

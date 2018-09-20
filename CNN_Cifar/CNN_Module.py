@@ -150,15 +150,15 @@ class Parallel_CNN:
         return log_prob_all
     def part_free_grad_CNN(self,x,y,weight,data_N,coef=1.,sigma=22.,flag_retain=False):
         '''
-        This method
-        :param x:
-        :param y:
-        :param weight:
-        :param data_N:
-        :param coef:
-        :param sigma:
-        :param flag_retain:
-        :return:
+        This method implement the same function as grad_CNN, but vastly reduce the memory usage but more computational expensive.
+        :param x: The image
+        :param y: The label
+        :param weight: Current states
+        :param data_N: The size of training data
+        :param coef: The regularization term to account for dimensionality mismatch, no need for training purpose
+        :param sigma: The std of prior
+        :param flag_retain: Whether to retain the graph after backward()
+        :return: The grad_U
         '''
         # split the weight
         weight_list = self.split_dimension(weight)

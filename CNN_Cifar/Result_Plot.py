@@ -71,7 +71,7 @@ def DQContour(Q_MLP, D_MLP, dim=[0, 1], range1=[-2.5, 2.5], range2=[-2.5, 2.5], 
         out = np.squeeze(np.abs(5 * D_MLP.forward(X_tensor).cpu().data.numpy()))
         return X1, X2, out
 
-model_str='20180919-073244_30'
+model_str='20180919-073244_80'
 model_load_path='./tmp_model_save/'
 
 

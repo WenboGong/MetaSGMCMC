@@ -135,3 +135,53 @@ def roll_out(p):
     else:
         flag_roll_out=False
     return flag_roll_out
+def roll_out_multi(p,state_pos_rep,state_mom_rep,num_CNN,total_dim):
+    '''
+    THis implement the multiple roll-out
+    :param p:
+    :return: state_pos_init,state_mom_init
+    '''
+    # Generate which chains need to be initialized with repo
+    u_list=torch.rand(num_CNN)
+    ind_list=(u_list<=p)
+    total_num_replay=torch.sum(ind_list)
+    ind_ind=[i for i,p in enumerate(ind_list) if bool(p)]
+    if torch.abs(total_num_replay-0.).data.cpu().numpy()<0.1:
+        state_pos_init=0.1*torch.randn(num_CNN,total_dim,requires_grad=True)
+        state_mom_init=0*torch.randn(num_CNN,total_dim,requires_grad=True)
+        ind_state=[0]
+        ind_ind=[0]
+        return state_pos_init,state_mom_init,total_num_replay,ind_state,ind_ind
+    # Draw from repo
+    size_repo=len(state_pos_rep)
+
+    if size_repo<num_CNN:
+        ind_state=torch.randint(0,size_repo,(total_num_replay,))
+        ind_chain=torch.multinomial(torch.ones(num_CNN),total_num_replay)
+    else:
+
+        ind_state=torch.multinomial(torch.ones(size_repo),total_num_replay)
+        ind_chain=torch.randint(0,num_CNN,(total_num_replay,))
+    # Extraction
+    for i,x in enumerate(ind_state):
+        if i==0:
+            repo_pos=state_pos_rep[int(x)][int(ind_chain[i]):int(ind_chain[i])+1,:]
+            repo_mom=state_mom_rep[int(x)][int(ind_chain[i]):int(ind_chain[i])+1,:]
+        else:
+            repo_pos=torch.cat((repo_pos,state_pos_rep[int(x)][int(ind_chain[i]):int(ind_chain[i])+1,:]),dim=0)
+            repo_mom=torch.cat((repo_mom,state_mom_rep[int(x)][int(ind_chain[i]):int(ind_chain[i])+1,:]),dim=0)
+
+
+    # Generate initialization
+    state_pos_init=0.1*torch.randn(num_CNN,total_dim)
+    state_pos_init[ind_list]=repo_pos
+    state_mom_init=0*torch.randn(num_CNN,total_dim)
+    state_mom_init[ind_list]=repo_mom
+    # Set Requires grad
+    state_pos_init.requires_grad=True
+    state_mom_init.requires_grad=True
+    return state_pos_init,state_mom_init,total_num_replay,ind_state,ind_ind
+
+
+
+

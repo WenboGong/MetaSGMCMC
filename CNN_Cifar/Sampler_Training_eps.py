@@ -100,7 +100,8 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
 
                                           )
 Param=Param_NNSGHMC_Training
-eps=torch.tensor(eps1,requires_grad=True)
+eps=torch.tensor(np.sqrt(eps1),requires_grad=True)
+eps_in=eps**2
 ######################## Define own data-loader ####################
 tensor_train,tensor_train_label,tensor_test,tensor_test_label=SelectImage(trainset,testset)
 Train_data=Cifar_class(tensor_train,tensor_train_label)
@@ -181,7 +182,7 @@ for ep in range(epoch):
 
     # Drawing samples
     state_list,state_mom_list,counter_ELBO=NNSGHMC_obj.parallel_sample(weight_init,state_mom_init,B,train_loader,data_N,
-                                                        sigma,num_CNN,sub_epoch,Param['Limit Step'],eps,eps,
+                                                        sigma,num_CNN,sub_epoch,Param['Limit Step'],eps_in,eps_in,
                                                         Param['TBPTT'],coef,Param['Sample Interval'],Param['Sub Sample Num'],Param['Mom Resample'],
                                                         True,None,10000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'])
 
@@ -196,7 +197,7 @@ for ep in range(epoch):
     # Update Parameter
     Adam_Q.step()
     Adam_D.step()
-    print('Eps:%s'%(eps.data.cpu().numpy()))
+    print('Eps:%s'%(eps_in.data.cpu().numpy()))
 
     # Sub Epoch Training
 
@@ -243,7 +244,7 @@ for ep in range(epoch):
         state_list, state_mom_list, counter_ELBO = NNSGHMC_obj.parallel_sample(weight_init, state_mom_init, B,
                                                                                train_loader, data_N,
                                                                                sigma, num_CNN, sub_epoch,
-                                                                               Param['Limit Step'], eps, eps,
+                                                                               Param['Limit Step'], eps_in, eps_in,
                                                                                Param['TBPTT'], coef,
                                                                                Param['Sample Interval'],
                                                                                Param['Sub Sample Num'],
@@ -261,7 +262,7 @@ for ep in range(epoch):
         # Update Parameter
         Adam_Q.step()
         Adam_D.step()
-        print('Eps:%s'%(eps.cpu().data.numpy()))
+        print('Eps:%s'%(eps_in.cpu().data.numpy()))
     # Save trained model
     if (ep+1)%Param['Saving Interval']==0:
         torch.save(Q_MLP.state_dict(),'./tmp_model_save/Q_MLP_%s_%s'%(timestr,(ep+1)))

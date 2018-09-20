@@ -44,8 +44,5 @@ p=0.4
 # print(ind_list)
 # print(A)
 # print(B)
-u_list=torch.rand(num_CNN)
-ind_list=(u_list<=p)
-total_num_replay=torch.sum(ind_list)
-ind_ind=[i for i,p in enumerate(ind_list) if bool(p)]
-A=1
+A=torch.tensor(3)
+print(A)

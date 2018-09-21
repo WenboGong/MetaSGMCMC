@@ -191,7 +191,7 @@ class NN_SGHMC:
                 if counter>0:
                     mean_energy_pre=Variable(mean_energy_mod.data)
                 ######
-                
+
                 mean_energy_mod=Variable(1./data_N*energy_mod.data)
                 #Tracer()()
                 #energy_list.append(energy)
@@ -430,7 +430,7 @@ class PSGLD:
         self.U=BNN_obj
         #self.C=C
         #self.B=B
-    def parallel_sample(self,state_pos,loader,data_N,num_chain=50,total_step=1000,eps=0.01,exp_term=0.99,lamb=1e-5,sigma=1.,interval=100,test_loader=None,data_len=10000.):
+    def parallel_sample(self,state_pos,loader,data_N,num_chain=50,total_step=1000,eps=0.01,exp_term=0.99,lamb=1e-5,sigma=22.,interval=5000,test_loader=None,data_len=10000.):
         '''
         
         Similar setting as SGHMC but with exp_term controls the exponential decay
@@ -440,7 +440,7 @@ class PSGLD:
         energy_list=[]
         counter=0
         time_list=[]
-        
+
         
         for time_t in range(total_step):
             #Tracer()()
@@ -488,10 +488,12 @@ class PSGLD:
                     #Tracer()()
                 if (counter+1)%interval==0:
                     state_list.append(state_pos)
+
                 counter+=1
+            if (time_t + 1) % 10 == 0:
+                print(Test_accuracy(test_loader, self.U, state_pos, data_number=data_len))
             ed=time.time()-st
-            if (time_t+1)%10==0:
-                print(Test_accuracy(test_loader,self.U,state_pos,data_number=data_len))
+
             time_list.append(ed)
                 
             #state_list.append(state_pos)

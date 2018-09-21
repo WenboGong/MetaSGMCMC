@@ -44,5 +44,7 @@ p=0.4
 # print(ind_list)
 # print(A)
 # print(B)
-A=torch.tensor(3)
-print(A)
+A=torch.tensor(3.,requires_grad=True)
+B=A**2
+A.data=torch.tensor(4.)
+print(B)

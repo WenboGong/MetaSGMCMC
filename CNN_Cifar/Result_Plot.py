@@ -68,10 +68,10 @@ def DQContour(Q_MLP, D_MLP, dim=[0, 1], range1=[-2.5, 2.5], range2=[-2.5, 2.5], 
 
         X_tensor = Variable(torch.from_numpy(X_grid).float().cuda())
 
-        out = np.squeeze(np.abs(5 * D_MLP.forward(X_tensor).cpu().data.numpy()))
+        out = np.squeeze(np.abs(10 * D_MLP.forward(X_tensor).cpu().data.numpy()))
         return X1, X2, out
 
-model_str='20180920-093724_10'
+model_str='20180920-143635_100'
 model_load_path='./tmp_model_save/'
 
 

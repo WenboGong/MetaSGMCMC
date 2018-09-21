@@ -91,7 +91,9 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           Sub_Sample_Num=5, # if 0, need to turn off the in Chain loss in CNN_Sampler.py
                                           Roll_Out_Mom_Resample=False,
                                           Flag_In_Chain=True,
-                                          Scale_Entropy=1.
+                                          Scale_Entropy=1.,
+                                          Eps_Training=False,
+                                          Test_Interval=10
 
 
 
@@ -176,10 +178,10 @@ for ep in range(epoch):
         state_mom_init=0*torch.randn(num_CNN,total_dim,requires_grad=True)
 
     # Drawing samples
-    state_list,state_mom_list,counter_ELBO=NNSGHMC_obj.parallel_sample(weight_init,state_mom_init,B,train_loader,data_N,
+    state_list,state_mom_list,counter_ELBO,Acc_list,NLL_list=NNSGHMC_obj.parallel_sample(weight_init,state_mom_init,B,train_loader,data_N,
                                                         sigma,num_CNN,sub_epoch,Param['Limit Step'],eps1,eps2,
                                                         Param['TBPTT'],coef,Param['Sample Interval'],Param['Sub Sample Num'],Param['Mom Resample'],
-                                                        True,None,10000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'])
+                                                        True,None,10000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'],test_interval=Param['Test Interval'])
 
     # Store in the rep
     state_pos_rep.append(torch.tensor(state_list[-1].data))
@@ -235,7 +237,7 @@ for ep in range(epoch):
             if Param['Roll Out Mom Resample']:
                 state_mom_init = 0 * torch.randn(num_CNN, total_dim, requires_grad=True)
 
-        state_list, state_mom_list, counter_ELBO = NNSGHMC_obj.parallel_sample(weight_init, state_mom_init, B,
+        state_list, state_mom_list, counter_ELBO,Acc_list,NLL_list = NNSGHMC_obj.parallel_sample(weight_init, state_mom_init, B,
                                                                                train_loader, data_N,
                                                                                sigma, num_CNN, sub_epoch,
                                                                                Param['Limit Step'], eps1, eps2,
@@ -243,7 +245,7 @@ for ep in range(epoch):
                                                                                Param['Sample Interval'],
                                                                                Param['Sub Sample Num'],
                                                                                Param['Mom Resample'],
-                                                                               True, None, 10000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'])
+                                                                               True, None, 10000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'],test_interval=Param['Test Interval'])
 
         # Store in the rep
         state_pos_rep.append(torch.tensor(state_list[-1].data))

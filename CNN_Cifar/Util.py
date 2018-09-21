@@ -56,6 +56,8 @@ def GenerateParameters(Type,**kwargs):
         Param['Mom Resample']=kwargs['Mom_Resample']
         Param['Alpha']=kwargs['Alpha']
         Param['Interval']=kwargs['Interval']
+        Param['Test Interval']=kwargs['Test_Interval']
+        Param['Test Mode']=kwargs['Test_Mode']
         assert len(Param['Random Seed']) == Param['Num Run'], 'Number of runs are not consistent with length of random seeds'
     if Type=='NNSGHMC Training':
         Param['Type']=Type
@@ -90,6 +92,7 @@ def GenerateParameters(Type,**kwargs):
         Param['Flag In Chain']=kwargs['Flag_In_Chain']
         Param['Scale Entropy']=kwargs['Scale_Entropy']
         Param['Eps Training']=kwargs['Eps_Training']
+        Param['Test Interval']=kwargs['Test_Interval']
     if Type=='NNSGHMC Test':
         Param['Type'] = Type
         Param['Random Seed'] = kwargs['Random_Seed']
@@ -111,9 +114,38 @@ def GenerateParameters(Type,**kwargs):
         Param['Clamp D Max'] = kwargs['Clamp_D_Max']
         Param['Batch Size'] = kwargs['Batch_Size']
         Param['Coef']=kwargs['Coef']
+        Param['Test Interval']=kwargs['Test_Interval']
+    if Type=='SGLD':
+        Param['Type']='SGLD'
+        Param['Step Size'] = kwargs['Step_Size']
+        Param['Beta'] = kwargs['Beta']
+        Param['Batch Size'] = kwargs['Batch_Size']
+        Param['Epoch'] = kwargs['Epoch']
+        Param['Random Seed'] = kwargs['Random_Seed']
+        Param['Num Run'] = kwargs['Num_Run']
+        Param['Sigma'] = kwargs['Sigma']
+        Param['Num CNN'] = kwargs['Num_CNN']
+        Param['Interval'] = kwargs['Interval']
+        Param['Test Interval'] = kwargs['Test_Interval']
+        Param['Test Mode'] = kwargs['Test_Mode']
+    if Type=='PSGLD':
+        Param['Type'] = 'PSGLD'
+        Param['Step Size'] = kwargs['Step_Size']
+        Param['Beta'] = kwargs['Beta']
+        Param['Batch Size'] = kwargs['Batch_Size']
+        Param['Epoch'] = kwargs['Epoch']
+        Param['Random Seed'] = kwargs['Random_Seed']
+        Param['Num Run'] = kwargs['Num_Run']
+        Param['Sigma'] = kwargs['Sigma']
+        Param['Num CNN'] = kwargs['Num_CNN']
+        Param['Interval'] = kwargs['Interval']
+        Param['Test Interval'] = kwargs['Test_Interval']
+        Param['Exp Term']=kwargs['Exp_Term']
 
 
     return Param
+
+
 def write_Dict(Filename,Dict):
     '''
     To store Parameter dict to txt

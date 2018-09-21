@@ -40,10 +40,9 @@ class SGHMC:
         '''
         self.total_dim=total_dim
         self.CNN=CNN
-        self.test_mode=test_mode
     def parallel_sample(self,state_pos,state_mom,loader,data_N,num_CNN=20,mom_resample=50,
                         total_step=1000,eps=0.001,alpha=0.1,beta=0.,sigma=1.,interval=100,flag_SGLD=False,
-                        test_loader=None,data_len=10000.,Sequential_Accuracy=None):
+                        test_loader=None,data_len=10000.,Sequential_Accuracy=None,test_interval=10,test_mode='Cross Chain'):
         '''
         This implements the parallel sampling procedures of SGHMC for CNN Cifar-10
 
@@ -74,6 +73,8 @@ class SGHMC:
         '''
         state_list=[]
         counter=0 #count total running steps
+        Acc_list=[]
+        NLL_list=[]
         for time_t in range(total_step):
             print('Epoch:%s'%(time_t+1))
             for data in enumerate(loader):
@@ -107,16 +108,20 @@ class SGHMC:
                 # Store the sample
                 if (counter+1)%interval==0:
                     state_list.append(state_pos.detach())
-                counter+=1
-            if self.test_mode=='Cross Chain' and type(test_loader) != type(None) and (time_t + 1) % 1 == 0:
-                # Print the accuracy across chains
-                print(Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len))
-            elif test_mode=='Cross Time' and (time_t)%2 ==0 and type(Sequential_Accuracy)!=type(None):
-                # Print the Sequential Accuracy
-                print(Sequential_Accuracy.Test_Accuracy(state_pos.data))
+
+                if test_mode=='Cross Chain' and type(test_loader) != type(None) and (counter + 1) % test_interval== 0:
+                    # Print the accuracy across chains
+                    Acc,NLL=Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len)
+                    print('Acc:%s NLL:%s'%(Acc, NLL.data.cpu().numpy()))
+                    Acc_list.append(Acc)
+                    NLL_list.append(NLL.data.cpu().numpy())
+                elif test_mode=='Cross Time' and (time_t)%2 ==0 and type(Sequential_Accuracy)!=type(None):
+                    # Print the Sequential Accuracy
+                    print(Sequential_Accuracy.Test_Accuracy(state_pos.data))
+                counter += 1
 
 
-        return state_list
+        return state_list,Acc_list,NLL_list
 
 ########################################################################################################################
 # Sampler for NNSGHMC
@@ -129,7 +134,7 @@ class NNSGHMC:
         self.total_dim=self.CNN.get_dimension()
     def parallel_sample(self,state_pos,state_mom,B,loader,data_N,sigma=1.,num_CNN=20,total_step=10,limit_step=10000,eps=0.1,eps2=0.1,
                         TBPTT_step=20,coef=1.,sample_interval=10,sub_sample_number=8,mom_resample=100000,mode_train=True,
-                        test_loader=None,data_len=10000.,flag_in_chain=False,show_ind=None,scale_entropy=1.):
+                        test_loader=None,data_len=10000.,flag_in_chain=False,show_ind=None,scale_entropy=1.,test_interval=10):
         '''
         This is to run the sampler dynamics.
 
@@ -164,6 +169,8 @@ class NNSGHMC:
         state_mom_list=[]
         counter = 0
         counter_ELBO=0
+        Acc_list=[]
+        NLL_list=[]
         flag_show=True
         if flag_in_chain==True:
             state_list_in_chain=[] # Store samples for In-Chain Loss
@@ -269,10 +276,16 @@ class NNSGHMC:
 
                 elif mode_train==False and (counter+1)%sample_interval==0:
                     state_list.append(torch.tensor(state_pos.data))
+                # Test the sampler for test mode
+                if (counter+1)%test_interval==0 and mode_train==False and type(test_loader)!=type(None):
+                    Acc,NLL=Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len)
+                    print('Counter:%s Acc:%s NLL:%s'%(counter+1,Acc,NLL.data.cpu().numpy()))
+                    Acc_list.append(Acc)
+                    NLL_list.append(NLL.data.cpu().numpy())
                 # Add 1 to counter
                 counter+=1
-            # Test the accuracy
-            if (time_t+1)%1==0 and type(test_loader)!=type(None):
+            # Test the accuracy for training mode
+            if (time_t+1)%1==0 and type(test_loader)!=type(None) and mode_train==True:
                 print(Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len))
             # Stop the dynamics
             if mode_train==True and (counter+1)%limit_step==0:
@@ -282,7 +295,7 @@ class NNSGHMC:
         if mode_train==True:
             state_list.append(torch.tensor(state_pos.data))
             state_mom_list.append(torch.tensor(state_mom.data))
-        return state_list,state_mom_list,counter_ELBO
+        return state_list,state_mom_list,counter_ELBO,Acc_list,NLL_list
     def parallel_sample_FD(self,state_pos,state_mom,B,loader,data_N,sigma=1.,num_CNN=50,total_step=10,limit_step=10000,eps=0.1,
                            eps2=0.1,coef=1.,sample_interval=10,mom_resample=1000000,flag_nan=True,
                            test_loader=None,data_len=10000.):
@@ -370,7 +383,69 @@ class NNSGHMC:
         return state_list
 
 
+class PSGLD:
+    def __init__(self,CNN,total_dim):
+        self.CNN=CNN
+        self.total_dim=total_dim
+    def parallel_sample(self,state_pos,loader,data_N,num_chain=20,total_step=200,eps=0.01,exp_term=0.99,lamb=1e-5,sigma=1.,interval=100,test_loader=None,data_len=10000.,test_interval=10):
+        state_list = []
+        counter = 0
+        Acc_list=[]
+        NLL_list=[]
 
+
+        for time_t in range(total_step):
+            st = time.time()
+            print('Epoch:%s'%(time_t+1))
+            for data in enumerate(loader):
+
+                if (counter + 1) % 1000 == 0:
+                    print('Step:%s' % (counter + 1))
+                x, y = torch.tensor(data[1][0].cuda()), data[1][1]
+                y = torch.unsqueeze(y, dim=1).cuda()
+                batch_y = int(y.shape[0])
+                y = torch.tensor(torch.zeros(batch_y, 10).scatter_(1, y, 1)).float()
+
+                #### Evaluate grad U ####
+                state_pos_clone = torch.tensor(state_pos.data, requires_grad=True)
+                grad_U, grad_U_mod, energy, energy_mod = self.CNN.grad_CNN(x, y, state_pos_clone, data_N, coef=1.,
+                                                                           sigma=sigma)
+                grad_U = torch.tensor(grad_U.data)  ### chain x total_dim
+                mean_grad_U = torch.tensor(1. / data_N * (-grad_U.data - (-state_pos.data / (sigma ** 2))))
+                # Tracer()()
+                energy = torch.tensor(energy.data)  ### chain x 1
+                #mean_energy = torch.tensor(1. / data_N * energy.data)
+
+
+                ####### compute V matrix #####
+                if counter == 0:
+                    V = torch.tensor(mean_grad_U.data * mean_grad_U.data)
+                else:
+                    V = exp_term * V + (1 - exp_term) * torch.tensor(mean_grad_U.data * mean_grad_U.data)  # num_chain x dim
+                ####### Compute G term #######
+                G = 1. / (lamb + torch.sqrt(V))  #### num_chain x dim
+                # Tracer()()
+
+                noise = torch.randn(num_chain, self.total_dim)
+                # add_noise=torch.unsqueeze(torch.diag(torch.sqrt(eps*2*self.C-(eps**2)*self.B)),dim=1)*noise#num_chain x total_dim
+                # state_mom=Variable(0*torch.randn(num_chain,self.dim),requires_grad=True)
+                add_noise = torch.sqrt(2 * eps * G) * noise
+                state_pos = torch.tensor(state_pos.data - eps * G.data * grad_U.data + add_noise.data)
+                if (counter + 1) % interval == 0:
+                    state_list.append(state_pos)
+                if (counter + 1) % test_interval == 0 and type(test_loader)!=type(None):
+                    Acc, NLL = Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len)
+                    print('Counter:%s Acc:%s NLL:%s' % (counter + 1, Acc, NLL.data.cpu().numpy()))
+                    Acc_list.append(Acc)
+                    NLL_list.append(NLL.data.cpu().numpy())
+
+                counter += 1
+
+            ed = time.time() - st
+
+
+            # state_list.append(state_pos)
+        return state_list, Acc_list,NLL_list
 
 
 

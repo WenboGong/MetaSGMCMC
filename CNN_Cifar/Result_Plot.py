@@ -89,7 +89,7 @@ D_MLP.load_state_dict(torch.load('%sD_MLP_%s'%(model_load_path,model_str)))
 # Generate Contour
 fig,(ax1,ax2,ax3)=plt.subplots(1,3,figsize=(18,5))
 # Ax1 with Q Contour
-X1,X2,out=DQContour(Q_MLP,D_MLP,range1=[0,15],range2=[-2,2])
+X1,X2,out=DQContour(Q_MLP,D_MLP,range1=[0,20],range2=[-2,2])
 CS1=ax1.contourf(X1,X2,out,50)
 fig.colorbar(CS1,ax=ax1)
 # Ax2 with D Contour 0,1 dim

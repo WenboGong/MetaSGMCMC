@@ -97,13 +97,15 @@ Param_SGLD=GenerateParameters(Type='SGLD',Step_Size=0.15,Beta=0.,Batch_Size=500,
 Param_PSGLD=GenerateParameters(Type='PSGLD',Step_Size=1.3e-3,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[10],Num_Run=1,Sigma=22,Num_CNN=20,Interval=5000,Test_Interval=10,Exp_Term=0.99)
 
 # Run each Sampler
-for i in range(3):
+for i in range(4):
     if i==0:
         Param=Param_NNSGHMC
     elif i==1:
         Param=Param_SGHMC
     elif i==2:
         Param=Param_PSGLD
+    elif i==3:
+        Param=Param_SGLD
     ######################## Define own data-loader ####################
     tensor_train,tensor_train_label,tensor_test,tensor_test_label=SelectImage(trainset,testset)
     Train_data=Cifar_class(tensor_train,tensor_train_label)

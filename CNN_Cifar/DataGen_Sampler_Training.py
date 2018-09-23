@@ -256,7 +256,7 @@ for ep in range(epoch):
                                                                                Param['Sample Interval'],
                                                                                Param['Sub Sample Num'],
                                                                                Param['Mom Resample'],
-                                                                               True, None, 5000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'],test_interval=Param['Test Interval'])
+                                                                               True, None, 5000.,Param['Flag In Chain'],show_ind=ind_chain,scale_entropy=Param['Scale Entropy'],test_interval=Param['Test Interval'],CNN_out_dim=CNN_out_dim)
 
         # Store in the rep
         state_pos_rep.append(torch.tensor(state_list[-1].data))

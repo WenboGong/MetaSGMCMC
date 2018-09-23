@@ -123,7 +123,7 @@ torch.manual_seed(Param['Random Seed'])
 np.random.seed(Param['Random Seed'])
 
 num_CNN=Param['Num CNN']
-CNN=Parallel_CNN(num_CNN=num_CNN,fc_size=50,out_channel=8,flat_size=8*6*6,CNN_out_dim=CNN_out_dim)
+CNN=Parallel_CNN(num_CNN=num_CNN,fc_size=50,out_channel=8,flat_size=8*6*6,out_dim=CNN_out_dim)
 Q_MLP=MLP(input_dim=2,hidden=10,out_size=1)
 D_MLP=Positive_MLP(input_dim=3,hidden=10,out_size=1)
 total_dim=CNN.get_dimension()

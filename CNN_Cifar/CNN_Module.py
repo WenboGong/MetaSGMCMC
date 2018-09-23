@@ -57,13 +57,18 @@ class Parallel_CNN:
         split_dimension(weight): Split the weight vector into desired weight tensor for CNN evaluation
         forawrd(x,weight): Compute the log probability for all CNN
     '''
-    def __init__(self,num_CNN=20,num_channle=3,filter_size=3,out_channel=16,flat_size=16*6*6,fc_size=100):
+    def __init__(self,num_CNN=20,num_channle=3,filter_size=3,out_channel=16,flat_size=16*6*6,fc_size=100,out_dim=10,AF='ReLU'):
         self.num_CNN=num_CNN
         self.num_channel=num_channle
         self.filter_size=filter_size
         self.out_channel=out_channel
         self.flat_size=flat_size
         self.fc_size=fc_size
+        self.out_dim=out_dim
+        if AF=='ReLU':
+            self.AF=F.relu
+        elif AF=='Sigmoid':
+            self.AF=F.sigmoid
     def split_dimension(self,weight):
         '''
         Split the vector into the desired shape
@@ -77,8 +82,8 @@ class Parallel_CNN:
         conv2_size=self.out_channel*self.out_channel*self.filter_size**2
         fc1_size=self.flat_size*self.fc_size
         fc1_bias_size=self.fc_size
-        fc2_size=self.fc_size*10
-        fc2_bias_size=10
+        fc2_size=self.fc_size*self.out_dim
+        fc2_bias_size=self.out_dim
         # Extraction the weight
         conv1_raw_tensor=weight[:,0:conv1_size]
         dim_tracker+=conv1_size
@@ -109,8 +114,8 @@ class Parallel_CNN:
 
         fc1_weight=fc1_raw_tensor.view(-1,self.fc_size,self.flat_size)
         fc1_bias=fc1_bias_raw_tensor.view(-1,self.fc_size)
-        fc2_weight=fc2_raw_tensor.view(-1,10,self.fc_size)
-        fc2_bias=fc2_bias_raw_tensor.view(-1,10)
+        fc2_weight=fc2_raw_tensor.view(-1,self.out_dim,self.fc_size)
+        fc2_bias=fc2_bias_raw_tensor.view(-1,self.out_dim)
 
         return [conv1_weight,conv1_bias,conv2_weight,conv2_bias,fc1_weight,fc1_bias,fc2_weight,fc2_bias]
     def sub_forward(self,weight_list,x,ind):
@@ -121,11 +126,11 @@ class Parallel_CNN:
         :param ind: The indicator for which CNN to evaluate
         :return: Tensor with size :math:`N x 10`
         '''
-        conv1_output=F.max_pool2d(F.relu(F.conv2d(x,weight_list[0][ind],weight_list[1][ind])),2)
-        conv2_output=F.max_pool2d(F.relu(F.conv2d(conv1_output,weight_list[2][ind],weight_list[3][ind])),2)
+        conv1_output=F.max_pool2d(self.AF(F.conv2d(x,weight_list[0][ind],weight_list[1][ind])),2)
+        conv2_output=F.max_pool2d(self.AF(F.conv2d(conv1_output,weight_list[2][ind],weight_list[3][ind])),2)
         x_fc=conv2_output.view(-1,self.flat_size)
-        fc1_output=F.relu(F.linear(x_fc,weight_list[4][ind],weight_list[5][ind]))
-        fc2_output=F.relu(F.linear(fc1_output,weight_list[6][ind],weight_list[7][ind]))
+        fc1_output=self.AF(F.linear(x_fc,weight_list[4][ind],weight_list[5][ind]))
+        fc2_output=self.AF(F.linear(fc1_output,weight_list[6][ind],weight_list[7][ind]))
         return fc2_output
     def forward(self,x,weight):
         '''
@@ -167,7 +172,7 @@ class Parallel_CNN:
         #y_ = torch.unsqueeze(y, dim=0).repeat(sample_size, 1, 1)
         for ind in range(total_iter):
             #print(ind)
-            out_CNN = self.sub_forward(weight_list, x, ind) # N x 10
+            out_CNN = self.sub_forward(weight_list, x, ind) # N x out_dim
             log_prob = data_N*torch.mean(torch.sum(y*F.log_softmax(out_CNN, dim=1),dim=1,keepdim=True),dim=0) #
             grad_log_prob=grad(log_prob,weight,allow_unused=False)[0][ind:ind+1,:]
 
@@ -192,8 +197,8 @@ class Parallel_CNN:
         conv2_size = self.out_channel * self.out_channel * self.filter_size ** 2
         fc1_size = self.flat_size * self.fc_size
         fc1_bias_size = self.fc_size
-        fc2_size = self.fc_size * 10
-        fc2_bias_size = 10
+        fc2_size = self.fc_size * self.out_dim
+        fc2_bias_size = self.out_dim
         return conv1_size+self.out_channel+conv2_size+self.out_channel+fc1_size+fc1_bias_size+fc2_size+fc2_bias_size
     def grad_CNN(self,x,y,weight,data_N,coef=1.,sigma=22,flag_retain=False):
         '''

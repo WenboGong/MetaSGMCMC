@@ -42,7 +42,7 @@ class SGHMC:
         self.CNN=CNN
     def parallel_sample(self,state_pos,state_mom,loader,data_N,num_CNN=20,mom_resample=50,
                         total_step=1000,eps=0.001,alpha=0.1,beta=0.,sigma=1.,interval=100,flag_SGLD=False,
-                        test_loader=None,data_len=10000.,Sequential_Accuracy=None,test_interval=10,test_mode='Cross Chain'):
+                        test_loader=None,data_len=10000.,Sequential_Accuracy=None,test_interval=10,test_mode='Cross Chain',CNN_out_dim=10):
         '''
         This implements the parallel sampling procedures of SGHMC for CNN Cifar-10
 
@@ -84,7 +84,7 @@ class SGHMC:
                 y_orig=torch.tensor(y.data.clone())
                 y = torch.unsqueeze(y, dim=1)
                 batch_y = int(y.shape[0])
-                y = torch.tensor(torch.zeros(batch_y, 10).scatter_(1, y, 1)).float()# one hot vector
+                y = torch.tensor(torch.zeros(batch_y, CNN_out_dim).scatter_(1, y, 1)).float()# one hot vector
 
 
 
@@ -134,7 +134,7 @@ class NNSGHMC:
         self.total_dim=self.CNN.get_dimension()
     def parallel_sample(self,state_pos,state_mom,B,loader,data_N,sigma=1.,num_CNN=20,total_step=10,limit_step=10000,eps=0.1,eps2=0.1,
                         TBPTT_step=20,coef=1.,sample_interval=10,sub_sample_number=8,mom_resample=100000,mode_train=True,
-                        test_loader=None,data_len=10000.,flag_in_chain=False,show_ind=None,scale_entropy=1.,test_interval=10):
+                        test_loader=None,data_len=10000.,flag_in_chain=False,show_ind=None,scale_entropy=1.,test_interval=10,CNN_out_dim=10):
         '''
         This is to run the sampler dynamics.
 
@@ -192,7 +192,7 @@ class NNSGHMC:
                 x, y = torch.tensor(data[1][0].cuda()), data[1][1].cuda()
                 y = torch.unsqueeze(y, dim=1)
                 batch_y = int(y.shape[0])
-                y = torch.tensor(torch.zeros(batch_y, 10).scatter_(1, y, 1)).float()
+                y = torch.tensor(torch.zeros(batch_y, CNN_out_dim).scatter_(1, y, 1)).float()
 
                 # Clone the theta variable
                 state_pos_clone=torch.tensor(state_pos.data,requires_grad=True)
@@ -298,7 +298,7 @@ class NNSGHMC:
         return state_list,state_mom_list,counter_ELBO,Acc_list,NLL_list
     def parallel_sample_FD(self,state_pos,state_mom,B,loader,data_N,sigma=1.,num_CNN=50,total_step=10,limit_step=10000,eps=0.1,
                            eps2=0.1,coef=1.,sample_interval=10,mom_resample=1000000,flag_nan=True,
-                           test_loader=None,data_len=10000.):
+                           test_loader=None,data_len=10000.,CNN_out_dim=10):
         state_list=[]
         counter=0
         flag_reset=False
@@ -313,7 +313,7 @@ class NNSGHMC:
                 x, y = torch.tensor(data[1][0].cuda()), data[1][1]
                 y = torch.unsqueeze(y, dim=1).cuda()
                 batch_y = int(y.shape[0])
-                y = torch.tensor(torch.zeros(batch_y, 10).scatter_(1, y, 1)).float()
+                y = torch.tensor(torch.zeros(batch_y, CNN_out_dim).scatter_(1, y, 1)).float()
                 state_pos_clone = torch.tensor(state_pos.data, requires_grad=True)
                 # Store previous U
                 if counter>0:
@@ -387,7 +387,8 @@ class PSGLD:
     def __init__(self,CNN,total_dim):
         self.CNN=CNN
         self.total_dim=total_dim
-    def parallel_sample(self,state_pos,loader,data_N,num_chain=20,total_step=200,eps=0.01,exp_term=0.99,lamb=1e-5,sigma=1.,interval=100,test_loader=None,data_len=10000.,test_interval=10):
+    def parallel_sample(self,state_pos,loader,data_N,num_chain=20,total_step=200,eps=0.01,exp_term=0.99,lamb=1e-5,sigma=1.,interval=100,
+                        test_loader=None,data_len=10000.,test_interval=10,CNN_out_dim=10):
         state_list = []
         counter = 0
         Acc_list=[]
@@ -404,7 +405,7 @@ class PSGLD:
                 x, y = torch.tensor(data[1][0].cuda()), data[1][1]
                 y = torch.unsqueeze(y, dim=1).cuda()
                 batch_y = int(y.shape[0])
-                y = torch.tensor(torch.zeros(batch_y, 10).scatter_(1, y, 1)).float()
+                y = torch.tensor(torch.zeros(batch_y, CNN_out_dim).scatter_(1, y, 1)).float()
 
                 #### Evaluate grad U ####
                 state_pos_clone = torch.tensor(state_pos.data, requires_grad=True)

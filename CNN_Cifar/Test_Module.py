@@ -31,7 +31,7 @@ def Test_Accuracy_example(CNN,test_loader):
     Acc=correct/total
     return Acc
 
-def Test_Accuracy(CNN,test_loader,weight,test_number=10000.,flag_opt=False):
+def Test_Accuracy(CNN,test_loader,weight,test_number=10000.,flag_opt=False,CNN_out_dim=10):
     '''
     This function only evaluate the accuracy of samples taken across chain at certain time
     :param CNN: The CNN objective
@@ -47,7 +47,7 @@ def Test_Accuracy(CNN,test_loader,weight,test_number=10000.,flag_opt=False):
         x, y = data[1][0].cuda(), data[1][1].cuda()
         y_ = torch.unsqueeze(y, dim=1)
         batch_y = int(y_.shape[0])
-        y_hot = torch.zeros(batch_y, 10).scatter_(1, y_, 1)
+        y_hot = torch.zeros(batch_y, CNN_out_dim).scatter_(1, y_, 1)
         y_hot=y_hot.float()
         if flag_opt==False:
             out_log=CNN.predict(x,weight)
@@ -59,6 +59,8 @@ def Test_Accuracy(CNN,test_loader,weight,test_number=10000.,flag_opt=False):
 
         correct += (y == y_pred).sum().item()
     return correct/test_number,out_overall
+
+# Not usable for datagen
 class Sequential_Accuracy:
     '''
     This class is to enable the evaluation for drawing samples across time and across chain

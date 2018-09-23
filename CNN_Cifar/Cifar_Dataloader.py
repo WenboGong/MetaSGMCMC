@@ -47,6 +47,11 @@ def SelectImage(Cifar_data_train,Cifar_data_test):
 
 
 
+
+
+
+
+
 class Cifar_class(Dataset):
     '''
     This is to create faster dataloader from the initialized dataset. The transformation in original Cifar 10 is slow.
@@ -73,8 +78,72 @@ class Cifar_class(Dataset):
         return (sample_x, sample_y)
 
 
+def SelectImage_DataGen(train_loader, test_loader, train_image=[0, 4], test_image=[5, 9]):
+    '''
+    This is to split the data into two groups
+    :param train_loader:
+    :param test_loader:
+    :param train_image:
+    :param test_image:
+    :return:
+    '''
+    X_train_sampler_tensor = [] # This is used to train the sampler (dataset for train task)
+    X_train_CNN_tensor = [] # The corresponding test dataset for train task
+    Y_train_sampler_tensor = []
+    Y_train_CNN_tensor = []
+    X_test_sampler_tensor = [] # This is the dataset for training in test task
+    Y_test_sampler_tensor = [] # True test dataset
+    X_test_CNN_tensor = []
+    Y_test_CNN_tensor = []
+
+    for ind, data in enumerate(train_loader):
+        if (ind + 1) % 5000 == 0:
+            print('Ind:%s' % (ind + 1))
+        x, label = torch.squeeze(data[0]), data[1]
+        if label >= train_image[0] and label <= train_image[1]:
+            X_train_sampler_tensor.append(X)
+            Y_train_sampler_tensor.append(label)
+        else:
+            X_train_CNN_tensor.append(X)
+            Y_train_CNN_tensor.append(label - 5)
+
+    for ind, data in enumerate(test_loader):
+        if (ind + 1) % 5000 == 0:
+            print('Ind:%s' % (ind + 1))
+        X, label = torch.squeeze(data[0]), data[1]
+        if label >= test_image[0] and label <= test_image[1]:
+            X_test_CNN_tensor.append(X)
+            Y_test_CNN_tensor.append(label - 5)
+        else:
+            X_test_sampler_tensor.append(X)
+            Y_test_sampler_tensor.append(label)
+    return X_train_sampler_tensor, X_train_CNN_tensor, Y_train_sampler_tensor, Y_train_CNN_tensor, X_test_CNN_tensor, Y_test_CNN_tensor, X_test_sampler_tensor, Y_test_sampler_tensor
 
 
+class GroupCifar(Dataset):
+    '''
+    This is used to group different dataset
+    '''
+    def __init__(self, x, y, group, transform=None):
+        if group == 1:
+            print('Data used for train sampler')
+        elif group == 2:
+            print('Data used for train CNN using trained sampler')
+        elif group == 3:
+            print('Data used for Test CNN')
+        elif group == 4:
+            print('Data used for test sampler training')
+        self.x = x
+        self.y = y
+        self.group = group
+        self.transform = transform
 
+    def __len__(self):
+        return len(self.x)
 
-        
+    def __getitem__(self, idx):
+        (sample_x, sample_y) = self.x[idx], self.y[idx]
+        if self.transform != None:
+            (sample_x, sample_y) = self.transform((sample_x, sample_y))
+        return (sample_x, sample_y)
+

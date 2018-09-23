@@ -56,7 +56,7 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=64,
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 # Define time
-timestr = time.strftime("%Y%m%d-%H%M%S")
+
 
 
 
@@ -68,7 +68,7 @@ eps2=float(np.sqrt(0.003/data_N))
 Scale_Q_D=float(0.005/eps2)
 coef=15768./61478.
 Param_NNSGHMC=GenerateParameters('NNSGHMC Test',
-                                Random_Seed=10,
+                                Random_Seed=[14,15,16,17,18,19],
                                 Step_Size_1=eps1,
 Step_Size_2=eps2,
 Offset_Q=0,
@@ -90,170 +90,175 @@ Coef=coef,
                                  Test_Interval=10
                             )
 
-Param_SGHMC=GenerateParameters(Type='SGHMC',Step_Size=0.003,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[10],Num_Run=1,Sigma=22.,Num_CNN=20,
+Param_SGHMC=GenerateParameters(Type='SGHMC',Step_Size=0.003,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[14,15,16,17,18,19],Num_Run=1,Sigma=22.,Num_CNN=20,
                                Mom_Resample=10000000,Alpha=0.01,Interval=5000,Test_Interval=10,Test_Mode='Cross Chain')
-Param_SGLD=GenerateParameters(Type='SGLD',Step_Size=0.15,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[10],Num_Run=1,Sigma=22.,Num_CNN=20,Mom_Resample=1000000000,Interval=5000,
+Param_SGLD=GenerateParameters(Type='SGLD',Step_Size=0.15,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[14,15,16,17,18,19],Num_Run=1,Sigma=22.,Num_CNN=20,Mom_Resample=1000000000,Interval=5000,
                               Test_Interval=100,Test_Mode='Cross Chain')
-Param_PSGLD=GenerateParameters(Type='PSGLD',Step_Size=1.3e-3,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[10],Num_Run=1,Sigma=22,Num_CNN=20,Interval=5000,Test_Interval=10,Exp_Term=0.99)
-
+Param_PSGLD=GenerateParameters(Type='PSGLD',Step_Size=1.3e-3,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[14,15,16,17,18,19],Num_Run=1,Sigma=22,Num_CNN=20,Interval=5000,Test_Interval=10,Exp_Term=0.99)
+# For each run
+for n_r in range(6):
+    timestr = time.strftime("%Y%m%d-%H%M%S")
 # Run each Sampler
-for i in range(4):
-    if i==0:
-        Param=Param_NNSGHMC
-    elif i==1:
-        Param=Param_SGHMC
-    elif i==2:
-        Param=Param_PSGLD
-    elif i==3:
-        Param=Param_SGLD
-    ######################## Define own data-loader ####################
-    tensor_train,tensor_train_label,tensor_test,tensor_test_label=SelectImage(trainset,testset)
-    Train_data=Cifar_class(tensor_train,tensor_train_label)
-    Test_data=Cifar_class(tensor_test,tensor_test_label)
-    train_loader=DataLoader(Train_data,batch_size=Param['Batch Size'],shuffle=True)
-    test_loader=DataLoader(Test_data,batch_size=Param['Batch Size'],shuffle=True)
-    test_loader_seq=DataLoader(Test_data,batch_size=10000, shuffle=False)
-    if Param['Type']=='NNSGHMC Test':
-    ##################### Define parameters #####################
-        print('Sampling From NNSGHMC')
-        model_str='20180920-143635_100'
-        model_load_path='./tmp_model_save/'
-        torch.manual_seed(Param['Random Seed'])
-        num_CNN=Param['Num CNN']
-        CNN=Parallel_CNN(num_CNN=num_CNN,fc_size=100,out_channel=16,flat_size=16*6*6)
-        Q_MLP=MLP(input_dim=2,hidden=10,out_size=1)
-        D_MLP=Positive_MLP(input_dim=3,hidden=10,out_size=1)
-        total_dim=CNN.get_dimension()
-        B=Param['Noise Estimation']
-        Q=parallel_Q_eff(CNN,Q_MLP,clamp=Param['Clamp Q'],offset=Param['Offset Q'])
-        D=parallel_D_eff(CNN,D_MLP,Param['Scale G'],Param['Scale D'],Param['Offset D'],Param['Clamp D Min'],Param['Clamp D Max'],
-                         Param['Scale Q D'])
-        Gamma=parallel_Gamma_eff(flag_D=True)
+    for i in range(4):
+        if i==0:
+            Param=Param_NNSGHMC
+        elif i==1:
+            Param=Param_SGHMC
+        elif i==2:
+            Param=Param_PSGLD
+        elif i==3:
+            Param=Param_SGLD
+        ######################## Define own data-loader ####################
+        tensor_train,tensor_train_label,tensor_test,tensor_test_label=SelectImage(trainset,testset)
+        Train_data=Cifar_class(tensor_train,tensor_train_label)
+        Test_data=Cifar_class(tensor_test,tensor_test_label)
+        train_loader=DataLoader(Train_data,batch_size=Param['Batch Size'],shuffle=True)
+        test_loader=DataLoader(Test_data,batch_size=Param['Batch Size'],shuffle=True)
+        test_loader_seq=DataLoader(Test_data,batch_size=10000, shuffle=False)
+        if Param['Type']=='NNSGHMC Test':
+        ##################### Define parameters #####################
+            print('Sampling From NNSGHMC')
+            model_str='20180920-143635_100'
+            model_load_path='./tmp_model_save/'
+            torch.manual_seed(Param['Random Seed'][n_r])
+            num_CNN=Param['Num CNN']
+            CNN=Parallel_CNN(num_CNN=num_CNN,fc_size=100,out_channel=16,flat_size=16*6*6)
+            Q_MLP=MLP(input_dim=2,hidden=10,out_size=1)
+            D_MLP=Positive_MLP(input_dim=3,hidden=10,out_size=1)
+            total_dim=CNN.get_dimension()
+            B=Param['Noise Estimation']
+            Q=parallel_Q_eff(CNN,Q_MLP,clamp=Param['Clamp Q'],offset=Param['Offset Q'])
+            D=parallel_D_eff(CNN,D_MLP,Param['Scale G'],Param['Scale D'],Param['Offset D'],Param['Clamp D Min'],Param['Clamp D Max'],
+                             Param['Scale Q D'])
+            Gamma=parallel_Gamma_eff(flag_D=True)
 
-        # Load stored model
-        Q_MLP.load_state_dict(torch.load('%s/Q_MLP_%s'%(model_load_path,model_str)))
-        D_MLP.load_state_dict(torch.load('%s/D_MLP_%s'%(model_load_path,model_str)))
+            # Load stored model
+            Q_MLP.load_state_dict(torch.load('%s/Q_MLP_%s'%(model_load_path,model_str)))
+            D_MLP.load_state_dict(torch.load('%s/D_MLP_%s'%(model_load_path,model_str)))
 
-        # Define Sampler
-        NNSGHMC_obj=NNSGHMC(CNN,Q,D,Gamma)
-        # Define Training parameters
-        epoch=Param['Epoch']
-        eps1=Param['Step Size 1']
-        eps2=Param['Step Size 2']
-        sigma=Param['Sigma']
-        coef=Param['Coef']
+            # Define Sampler
+            NNSGHMC_obj=NNSGHMC(CNN,Q,D,Gamma)
+            # Define Training parameters
+            epoch=Param['Epoch']
+            eps1=Param['Step Size 1']
+            eps2=Param['Step Size 2']
+            sigma=Param['Sigma']
+            coef=Param['Coef']
 
 
-        # Training
-        weight_init = 0.05 * torch.randn(num_CNN, total_dim,requires_grad=True)
-        state_mom_init=0.* torch.randn(num_CNN,total_dim,requires_grad=True)
+            # Training
+            weight_init = 0.05 * torch.randn(num_CNN, total_dim,requires_grad=True)
+            state_mom_init=0.* torch.randn(num_CNN,total_dim,requires_grad=True)
 
-        state_list,state_mom_list,_,Acc_list,NLL_list=NNSGHMC_obj.parallel_sample(weight_init,state_mom_init,B,train_loader,data_N,
-                                                                sigma,num_CNN,epoch,1000000000,eps1,eps2,
-                                                                1000000,coef,Param['Sample Interval'],0,Param['Mom Resample'],
-                                                                False,test_loader,10000.,test_interval=Param['Test Interval'])
-        Acc_list_np=np.asarray(Acc_list)
-        NLL_list_np=np.asarray(NLL_list)
-        # Save Results
-        np.savetxt('./Results/NNSGHMC_ep_%s_%s_Acc'%(Param['Epoch'],model_str),Acc_list_np)
-        np.savetxt('./Results/NNSGHMC_ep_%s_%s_NLL'%(Param['Epoch'],model_str),NLL_list_np)
-        write_Dict('./Results/Param_NNSGHMC_ep_%s_%s'%(Param['Epoch'],model_str), Param)
+            state_list,state_mom_list,_,Acc_list,NLL_list=NNSGHMC_obj.parallel_sample(weight_init,state_mom_init,B,train_loader,data_N,
+                                                                    sigma,num_CNN,epoch,1000000000,eps1,eps2,
+                                                                    1000000,coef,Param['Sample Interval'],0,Param['Mom Resample'],
+                                                                    False,test_loader,10000.,test_interval=Param['Test Interval'])
+            Acc_list_np=np.asarray(Acc_list)
+            NLL_list_np=np.asarray(NLL_list)
+            # Save Results
+            np.savetxt('./Results/NNSGHMC_ep_%s_%s_Acc'%(Param['Epoch'],model_str),Acc_list_np)
+            np.savetxt('./Results/NNSGHMC_ep_%s_%s_NLL'%(Param['Epoch'],model_str),NLL_list_np)
+            write_Dict('./Results/Param_NNSGHMC_ep_%s_%s'%(Param['Epoch'],model_str), Param)
 
-    elif Param['Type']=='SGHMC':
-        print('SGHMC Test')
-        ##Define initial parameters
-        eps = Param['Step Size'] / 50000.
-        alpha = Param['Alpha']
-        beta = Param['Beta']
-        epoch = Param['Epoch']
-        num_runs = Param['Num Run']
-        sigma = Param['Sigma']
-        num_CNN = Param['Num CNN']
-        mom_resample = Param['Mom Resample']
-        interval = Param['Interval']
+        elif Param['Type']=='SGHMC':
+            print('SGHMC Test')
+            torch.manual_seed(Param['Random Seed'][n_r])
+            ##Define initial parameters
+            eps = Param['Step Size'] / 50000.
+            alpha = Param['Alpha']
+            beta = Param['Beta']
+            epoch = Param['Epoch']
+            num_runs = Param['Num Run']
+            sigma = Param['Sigma']
+            num_CNN = Param['Num CNN']
+            mom_resample = Param['Mom Resample']
+            interval = Param['Interval']
 
-        # Define CNN network
-        CNN = Parallel_CNN(num_CNN=num_CNN, fc_size=100)
-        total_dim = CNN.get_dimension()
-        # Define Sampler
-        SGHMC_obj = SGHMC(total_dim, CNN)
-        # Initialize the weight and momentum
-        state_pos = 0.05 * torch.randn(num_CNN, total_dim, requires_grad=True)
-        state_mom = 0. * torch.randn(num_CNN, total_dim)
-        Sequential_Accuracy_obj = Sequential_Accuracy(test_loader_seq, CNN)
-        state_list,Acc_list,NLL_list = SGHMC_obj.parallel_sample(state_pos, state_mom, train_loader, data_N=50000., num_CNN=num_CNN,
-                                               mom_resample=mom_resample,
-                                               total_step=epoch, eps=eps, alpha=alpha, beta=beta, sigma=sigma,
-                                               interval=interval, flag_SGLD=False,
-                                               test_loader=test_loader, data_len=10000.,
-                                               Sequential_Accuracy=Sequential_Accuracy_obj,test_interval=Param['Test Interval'],test_mode=Param['Test Mode'])
-        Acc_list_np = np.asarray(Acc_list)
-        NLL_list_np = np.asarray(NLL_list)
-        # Save Results
-        np.savetxt('./Results/SGHMC_ep_%s_%s_Acc' % (Param['Epoch'],timestr), Acc_list_np)
-        np.savetxt('./Results/SGHMC_ep_%s_%s_NLL' % (Param['Epoch'],timestr), NLL_list_np)
-        write_Dict('./Results/Param_SGHMC_ep_%s_%s' % (Param['Epoch'],timestr), Param)
-    elif Param['Type']=='SGLD':
-        print('SGLD Sampling')
-        ##Define initial parameters
-        eps = Param['Step Size'] / 50000.
-        beta = Param['Beta']
-        epoch = Param['Epoch']
-        num_runs = Param['Num Run']
-        sigma = Param['Sigma']
-        num_CNN = Param['Num CNN']
-        interval = Param['Interval']
+            # Define CNN network
+            CNN = Parallel_CNN(num_CNN=num_CNN, fc_size=100)
+            total_dim = CNN.get_dimension()
+            # Define Sampler
+            SGHMC_obj = SGHMC(total_dim, CNN)
+            # Initialize the weight and momentum
+            state_pos = 0.05 * torch.randn(num_CNN, total_dim, requires_grad=True)
+            state_mom = 0. * torch.randn(num_CNN, total_dim)
+            Sequential_Accuracy_obj = Sequential_Accuracy(test_loader_seq, CNN)
+            state_list,Acc_list,NLL_list = SGHMC_obj.parallel_sample(state_pos, state_mom, train_loader, data_N=50000., num_CNN=num_CNN,
+                                                   mom_resample=mom_resample,
+                                                   total_step=epoch, eps=eps, alpha=alpha, beta=beta, sigma=sigma,
+                                                   interval=interval, flag_SGLD=False,
+                                                   test_loader=test_loader, data_len=10000.,
+                                                   Sequential_Accuracy=Sequential_Accuracy_obj,test_interval=Param['Test Interval'],test_mode=Param['Test Mode'])
+            Acc_list_np = np.asarray(Acc_list)
+            NLL_list_np = np.asarray(NLL_list)
+            # Save Results
+            np.savetxt('./Results/SGHMC_ep_%s_%s_Acc' % (Param['Epoch'],timestr), Acc_list_np)
+            np.savetxt('./Results/SGHMC_ep_%s_%s_NLL' % (Param['Epoch'],timestr), NLL_list_np)
+            write_Dict('./Results/Param_SGHMC_ep_%s_%s' % (Param['Epoch'],timestr), Param)
+        elif Param['Type']=='SGLD':
+            print('SGLD Sampling')
+            torch.manual_seed(Param['Random Seed'][n_r])
+            ##Define initial parameters
+            eps = Param['Step Size'] / 50000.
+            beta = Param['Beta']
+            epoch = Param['Epoch']
+            num_runs = Param['Num Run']
+            sigma = Param['Sigma']
+            num_CNN = Param['Num CNN']
+            interval = Param['Interval']
 
-        # Define CNN network
-        CNN = Parallel_CNN(num_CNN=num_CNN, fc_size=100)
-        total_dim = CNN.get_dimension()
-        # Define Sampler
-        SGHMC_obj = SGHMC(total_dim, CNN)
-        # Initialize the weight and momentum
-        state_pos = 0.05 * torch.randn(num_CNN, total_dim, requires_grad=True)
-        state_mom = 0. * torch.randn(num_CNN, total_dim)
-        Sequential_Accuracy_obj = Sequential_Accuracy(test_loader_seq, CNN)
-        state_list, Acc_list, NLL_list = SGHMC_obj.parallel_sample(state_pos, state_mom, train_loader, data_N=50000.,
-                                                                   num_CNN=num_CNN,
-                                                                   mom_resample=100000000,
-                                                                   total_step=epoch, eps=eps, alpha=1., beta=beta,
-                                                                   sigma=sigma,
-                                                                   interval=interval, flag_SGLD=True,
-                                                                   test_loader=test_loader, data_len=10000.,
-                                                                   Sequential_Accuracy=Sequential_Accuracy_obj,
-                                                                   test_interval=Param['Test Interval'],
-                                                                   test_mode=Param['Test Mode'])
-        Acc_list_np = np.asarray(Acc_list)
-        NLL_list_np = np.asarray(NLL_list)
-        # Save Results
-        np.savetxt('./Results/SGLD_ep_%s_%s_Acc' % (Param['Epoch'], timestr), Acc_list_np)
-        np.savetxt('./Results/SGLD_ep_%s_%s_NLL' % (Param['Epoch'], timestr), NLL_list_np)
-        write_Dict('./Results/Param_SGLD_ep_%s_%s' % (Param['Epoch'], timestr), Param)
-    elif Param['Type']=='PSGLD':
-        print('PSGLD Sampling')
-        ##Define initial parameters
-        eps = Param['Step Size'] / 50000.
-        beta = Param['Beta']
-        epoch = Param['Epoch']
-        num_runs = Param['Num Run']
-        sigma = Param['Sigma']
-        num_CNN = Param['Num CNN']
-        interval = Param['Interval']
+            # Define CNN network
+            CNN = Parallel_CNN(num_CNN=num_CNN, fc_size=100)
+            total_dim = CNN.get_dimension()
+            # Define Sampler
+            SGHMC_obj = SGHMC(total_dim, CNN)
+            # Initialize the weight and momentum
+            state_pos = 0.05 * torch.randn(num_CNN, total_dim, requires_grad=True)
+            state_mom = 0. * torch.randn(num_CNN, total_dim)
+            Sequential_Accuracy_obj = Sequential_Accuracy(test_loader_seq, CNN)
+            state_list, Acc_list, NLL_list = SGHMC_obj.parallel_sample(state_pos, state_mom, train_loader, data_N=50000.,
+                                                                       num_CNN=num_CNN,
+                                                                       mom_resample=100000000,
+                                                                       total_step=epoch, eps=eps, alpha=1., beta=beta,
+                                                                       sigma=sigma,
+                                                                       interval=interval, flag_SGLD=True,
+                                                                       test_loader=test_loader, data_len=10000.,
+                                                                       Sequential_Accuracy=Sequential_Accuracy_obj,
+                                                                       test_interval=Param['Test Interval'],
+                                                                       test_mode=Param['Test Mode'])
+            Acc_list_np = np.asarray(Acc_list)
+            NLL_list_np = np.asarray(NLL_list)
+            # Save Results
+            np.savetxt('./Results/SGLD_ep_%s_%s_Acc' % (Param['Epoch'], timestr), Acc_list_np)
+            np.savetxt('./Results/SGLD_ep_%s_%s_NLL' % (Param['Epoch'], timestr), NLL_list_np)
+            write_Dict('./Results/Param_SGLD_ep_%s_%s' % (Param['Epoch'], timestr), Param)
+        elif Param['Type']=='PSGLD':
+            print('PSGLD Sampling')
+            torch.manual_seed(Param['Random Seed'][n_r])
+            ##Define initial parameters
+            eps = Param['Step Size'] / 50000.
+            beta = Param['Beta']
+            epoch = Param['Epoch']
+            num_runs = Param['Num Run']
+            sigma = Param['Sigma']
+            num_CNN = Param['Num CNN']
+            interval = Param['Interval']
 
-        # Define CNN network
-        CNN = Parallel_CNN(num_CNN=num_CNN, fc_size=100)
-        total_dim = CNN.get_dimension()
-        # Define Sampler
-        PSGLD_obj = PSGLD(CNN,total_dim)
-        # Initialize the weight and momentum
-        state_pos = 0.05 * torch.randn(num_CNN, total_dim, requires_grad=True)
-        Sequential_Accuracy_obj = Sequential_Accuracy(test_loader_seq, CNN)
-        state_list, Acc_list, NLL_list = PSGLD_obj.parallel_sample(state_pos,train_loader,50000.,num_chain=num_CNN,total_step=epoch,eps=eps,
-                                                                   exp_term=Param['Exp Term'],lamb=1e-5,sigma=sigma,interval=interval,
-                                                                   test_loader=test_loader,data_len=10000.,test_interval=100)
-        Acc_list_np = np.asarray(Acc_list)
-        NLL_list_np = np.asarray(NLL_list)
-        # Save Results
-        np.savetxt('./Results/PSGLD_ep_%s_%s_Acc' % (Param['Epoch'], timestr), Acc_list_np)
-        np.savetxt('./Results/PSGLD_ep_%s_%s_NLL' % (Param['Epoch'], timestr), NLL_list_np)
-        write_Dict('./Results/Param_PSGLD_ep_%s_%s' % (Param['Epoch'], timestr), Param)
+            # Define CNN network
+            CNN = Parallel_CNN(num_CNN=num_CNN, fc_size=100)
+            total_dim = CNN.get_dimension()
+            # Define Sampler
+            PSGLD_obj = PSGLD(CNN,total_dim)
+            # Initialize the weight and momentum
+            state_pos = 0.05 * torch.randn(num_CNN, total_dim, requires_grad=True)
+            Sequential_Accuracy_obj = Sequential_Accuracy(test_loader_seq, CNN)
+            state_list, Acc_list, NLL_list = PSGLD_obj.parallel_sample(state_pos,train_loader,50000.,num_chain=num_CNN,total_step=epoch,eps=eps,
+                                                                       exp_term=Param['Exp Term'],lamb=1e-5,sigma=sigma,interval=interval,
+                                                                       test_loader=test_loader,data_len=10000.,test_interval=100)
+            Acc_list_np = np.asarray(Acc_list)
+            NLL_list_np = np.asarray(NLL_list)
+            # Save Results
+            np.savetxt('./Results/PSGLD_ep_%s_%s_Acc' % (Param['Epoch'], timestr), Acc_list_np)
+            np.savetxt('./Results/PSGLD_ep_%s_%s_NLL' % (Param['Epoch'], timestr), NLL_list_np)
+            write_Dict('./Results/Param_PSGLD_ep_%s_%s' % (Param['Epoch'], timestr), Param)

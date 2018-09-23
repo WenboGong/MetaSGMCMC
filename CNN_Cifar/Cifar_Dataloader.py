@@ -101,21 +101,21 @@ def SelectImage_DataGen(train_loader, test_loader, train_image=[0, 4], test_imag
             print('Ind:%s' % (ind + 1))
         x, label = torch.squeeze(data[0]), data[1]
         if label >= train_image[0] and label <= train_image[1]:
-            X_train_sampler_tensor.append(X)
+            X_train_sampler_tensor.append(x)
             Y_train_sampler_tensor.append(label)
         else:
-            X_train_CNN_tensor.append(X)
+            X_train_CNN_tensor.append(x)
             Y_train_CNN_tensor.append(label - 5)
 
     for ind, data in enumerate(test_loader):
         if (ind + 1) % 5000 == 0:
             print('Ind:%s' % (ind + 1))
-        X, label = torch.squeeze(data[0]), data[1]
+        x, label = torch.squeeze(data[0]), data[1]
         if label >= test_image[0] and label <= test_image[1]:
-            X_test_CNN_tensor.append(X)
+            X_test_CNN_tensor.append(x)
             Y_test_CNN_tensor.append(label - 5)
         else:
-            X_test_sampler_tensor.append(X)
+            X_test_sampler_tensor.append(x)
             Y_test_sampler_tensor.append(label)
     return X_train_sampler_tensor, X_train_CNN_tensor, Y_train_sampler_tensor, Y_train_CNN_tensor, X_test_CNN_tensor, Y_test_CNN_tensor, X_test_sampler_tensor, Y_test_sampler_tensor
 

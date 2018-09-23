@@ -101,7 +101,6 @@ Param_NNSGHMC_Training=GenerateParameters('NNSGHMC Training',
                                           )
 Param=Param_NNSGHMC_Training
 ######################## Define own data-loader ####################
-tensor_train,tensor_train_label,tensor_test,tensor_test_label=SelectImage(trainset,testset)
 X_train_sampler_tensor,X_train_CNN_tensor,Y_train_sampler_tensor,Y_train_CNN_tensor,X_test_CNN_tensor,Y_test_CNN_tensor,X_test_sampler_tensor,\
 Y_test_sampler_tensor=SelectImage_DataGen(trainset,testset,train_image=[0,4],test_image=[5,9])
 # Define Splited dataset

@@ -199,7 +199,7 @@ for ep in range(epoch):
     state_mom_rep.append(torch.tensor(state_mom_list[-1].data))
     # Modify gradient
     modify_grad(counter_ELBO, Q_MLP, D_MLP)
-    Err, NLL = Test_Accuracy(CNN,Sampler_test_loader,state_list[-1],5000.,False)
+    Err, NLL = Test_Accuracy(CNN,Sampler_test_loader,state_list[-1],5000.,False,CNN_out_dim=CNN_out_dim)
     print('Sampler Test Err:%s Test NLL:%s' % (Err, NLL.cpu().data.numpy()))
     Acc_rep.append((Err,NLL.cpu().data.numpy()))
     # Update Parameter
@@ -263,7 +263,7 @@ for ep in range(epoch):
         state_mom_rep.append(torch.tensor(state_mom_list[-1].data))
         # Modify Gradient
         modify_grad(counter_ELBO, Q_MLP, D_MLP)
-        Err, NLL = Test_Accuracy(CNN, Sampler_test_loader, state_list[-1], 5000., False)
+        Err, NLL = Test_Accuracy(CNN, Sampler_test_loader, state_list[-1], 5000., False,CNN_out_dim=CNN_out_dim)
         print('Test Err:%s Test NLL:%s' % (Err, NLL.cpu().data.numpy()))
         Acc_rep.append((Err, NLL.cpu().data.numpy()))
         # Update Parameter

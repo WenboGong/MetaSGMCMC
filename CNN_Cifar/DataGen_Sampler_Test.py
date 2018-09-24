@@ -95,22 +95,7 @@ Param_SGLD=GenerateParameters(Type='SGLD',Step_Size=0.15,Beta=0.,Batch_Size=500,
 Param_PSGLD=GenerateParameters(Type='PSGLD',Step_Size=1.4e-3,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[10,11,12,13,14,15,16,17,18,19],Num_Run=10,Sigma=22,Num_CNN=20,Interval=5000,Test_Interval=50,Exp_Term=0.99)
 
 
-######################## Define own data-loader ####################
-X_train_sampler_tensor,X_train_CNN_tensor,Y_train_sampler_tensor,Y_train_CNN_tensor,X_test_CNN_tensor,Y_test_CNN_tensor,X_test_sampler_tensor,\
-Y_test_sampler_tensor=SelectImage_DataGen(trainset,testset,train_image=[0,4],test_image=[5,9])
-# Define Splited dataset
-Sampler_train_data=GroupCifar(X_train_sampler_tensor,Y_train_sampler_tensor,group=1)
-Sampler_train_loader=DataLoader(Sampler_train_data, batch_size=500,
-                        shuffle=True)
-Sampler_test_data=GroupCifar(X_test_sampler_tensor,Y_test_sampler_tensor,group=4)
-Sampler_test_loader=DataLoader(Sampler_test_data, batch_size=500,
-                        shuffle=True)
-CNN_train_data=GroupCifar(X_train_CNN_tensor,Y_train_CNN_tensor,group=2)
-CNN_train_loader=DataLoader(CNN_train_data, batch_size=500,
-                        shuffle=True)
-CNN_test_data=GroupCifar(X_test_CNN_tensor,Y_test_CNN_tensor,group=3)
-CNN_test_loader=DataLoader(CNN_test_data, batch_size=500,
-                        shuffle=True)
+
 ##################################################################
 ############################################### Start Testing #####################################################
 # For each run

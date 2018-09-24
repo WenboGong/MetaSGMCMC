@@ -111,7 +111,7 @@ class SGHMC:
 
                 if test_mode=='Cross Chain' and type(test_loader) != type(None) and (counter + 1) % test_interval== 0:
                     # Print the accuracy across chains
-                    Acc,NLL=Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len)
+                    Acc,NLL=Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len,CNN_out_dim=CNN_out_dim)
                     print('Acc:%s NLL:%s'%(Acc, NLL.data.cpu().numpy()))
                     Acc_list.append(Acc)
                     NLL_list.append(NLL.data.cpu().numpy())
@@ -278,7 +278,7 @@ class NNSGHMC:
                     state_list.append(torch.tensor(state_pos.data))
                 # Test the sampler for test mode
                 if (counter+1)%test_interval==0 and mode_train==False and type(test_loader)!=type(None):
-                    Acc,NLL=Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len)
+                    Acc,NLL=Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len,CNN_out_dim=CNN_out_dim)
                     print('Counter:%s Acc:%s NLL:%s'%(counter+1,Acc,NLL.data.cpu().numpy()))
                     Acc_list.append(Acc)
                     NLL_list.append(NLL.data.cpu().numpy())
@@ -435,7 +435,7 @@ class PSGLD:
                 if (counter + 1) % interval == 0:
                     state_list.append(state_pos)
                 if (counter + 1) % test_interval == 0 and type(test_loader)!=type(None):
-                    Acc, NLL = Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len)
+                    Acc, NLL = Test_Accuracy(self.CNN, test_loader, state_pos.data, test_number=data_len,CNN_out_dim=CNN_out_dim)
                     print('Counter:%s Acc:%s NLL:%s' % (counter + 1, Acc, NLL.data.cpu().numpy()))
                     Acc_list.append(Acc)
                     NLL_list.append(NLL.data.cpu().numpy())

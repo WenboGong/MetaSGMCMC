@@ -90,18 +90,18 @@ Coef=coef,
                                  Test_Interval=10
                             )
 
-Param_SGHMC=GenerateParameters(Type='SGHMC',Step_Size=0.003,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[14,15,16,17,18,19],Num_Run=6,Sigma=22.,Num_CNN=20,
+Param_SGHMC=GenerateParameters(Type='SGHMC',Step_Size=0.003,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[10,11,12,13,14,15,16,17,18,19],Num_Run=10,Sigma=22.,Num_CNN=20,
                                Mom_Resample=10000000,Alpha=0.01,Interval=5000,Test_Interval=10,Test_Mode='Cross Chain')
 Param_SGLD=GenerateParameters(Type='SGLD',Step_Size=0.15,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[10,11,12,13,14,15,16,17,18,19],Num_Run=10,Sigma=22.,Num_CNN=20,Mom_Resample=1000000000,Interval=5000,
                               Test_Interval=10,Test_Mode='Cross Chain')
-Param_PSGLD=GenerateParameters(Type='PSGLD',Step_Size=1.3e-3,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[14,15,16,17,18,19],Num_Run=6,Sigma=22,Num_CNN=20,Interval=5000,Test_Interval=10,Exp_Term=0.99)
+Param_PSGLD=GenerateParameters(Type='PSGLD',Step_Size=1.3e-3,Beta=0.,Batch_Size=500,Epoch=200,Random_Seed=[15,16,17,18,19],Num_Run=5,Sigma=22,Num_CNN=20,Interval=5000,Test_Interval=10,Exp_Term=0.99)
 # For each run
-for n_r in range(10):
+for n_r in range(5):
     timestr = time.strftime("%Y%m%d-%H%M%S")
 # Run each Sampler
     for i in range(1):
         print('Num Run:%s'%(n_r))
-        i=3
+        i=2
         if i==0:
             Param=Param_NNSGHMC
         elif i==1:
@@ -257,10 +257,10 @@ for n_r in range(10):
             Sequential_Accuracy_obj = Sequential_Accuracy(test_loader_seq, CNN)
             state_list, Acc_list, NLL_list = PSGLD_obj.parallel_sample(state_pos,train_loader,50000.,num_chain=num_CNN,total_step=epoch,eps=eps,
                                                                        exp_term=Param['Exp Term'],lamb=1e-5,sigma=sigma,interval=interval,
-                                                                       test_loader=test_loader,data_len=10000.,test_interval=100)
+                                                                       test_loader=test_loader,data_len=10000.,test_interval=Param['Test Interval'])
             Acc_list_np = np.asarray(Acc_list)
             NLL_list_np = np.asarray(NLL_list)
             # Save Results
-            np.savetxt('./Results/PSGLD_ep_%s_%s_Acc' % (Param['Epoch'], timestr), Acc_list_np)
-            np.savetxt('./Results/PSGLD_ep_%s_%s_NLL' % (Param['Epoch'], timestr), NLL_list_np)
-            write_Dict('./Results/Param_PSGLD_ep_%s_%s' % (Param['Epoch'], timestr), Param)
+            np.savetxt('./Results/PSGLD_ep_%s_%s_Acc_10' % (Param['Epoch'], timestr), Acc_list_np)
+            np.savetxt('./Results/PSGLD_ep_%s_%s_NLL_10' % (Param['Epoch'], timestr), NLL_list_np)
+            write_Dict('./Results/Param_PSGLD_ep_%s_%s_10' % (Param['Epoch'], timestr), Param)

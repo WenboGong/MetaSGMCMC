@@ -20,23 +20,32 @@ import matplotlib
 import operator
 
 class Example_CNN(nn.Module):
-    def __init__(self,num_channel=3,height=32,width=32):
+    def __init__(self,num_channel=3,height=32,width=32,CNN_out_dim=10,AF='ReLU'):
         super(Example_CNN, self).__init__()
+        self.CNN_out_dim = CNN_out_dim
         self.conv1=nn.Conv2d(3,16,3)
         self.conv2=nn.Conv2d(16,16,3)
         self.fc1=nn.Linear(16*6*6,100)
-        self.fc2=nn.Linear(100,10)
+        self.fc2=nn.Linear(100,self.CNN_out_dim)
         self.softmax=nn.Softmax()
+
+        if AF=='ReLU':
+            self.AF=F.relu
+        elif AF=='Sigmoid':
+            self.AF=F.sigmoid
 
     def forward(self, x):
         # x should be batch x height x width
-        x=F.max_pool2d(F.relu(self.conv1(x)),(2,2))
-        x=F.max_pool2d(F.relu(self.conv2(x)),2)
+        x=F.max_pool2d(self.AF(self.conv1(x)),(2,2))
+        x=F.max_pool2d(self.AF(self.conv2(x)),2)
         x=x.view(-1, self.num_flat_features(x))
-        x = F.relu(self.fc1(x))
+        x = self.AF(self.fc1(x))
         x = self.fc2(x)
         #prob=self.softmax(x)
         return x
+    def log_prob(self,x):
+        out_prob=self.forward(x)
+        return F.softmax(out_prob,dim=1)
 
     def num_flat_features(self, x):
         size = x.size()[1:]  # all dimensions except the batch dimension

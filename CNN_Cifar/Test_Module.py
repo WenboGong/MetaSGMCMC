@@ -22,14 +22,24 @@ import operator
 def Test_Accuracy_example(CNN,test_loader):
     correct = 0
     total = 0
+    out_overall=0
     for data in enumerate(test_loader):
         x,y=data[1][0].cuda(),data[1][1].cuda()
+        y_ = torch.unsqueeze(y, dim=1)
+        batch_y = int(y_.shape[0])
+        y_hot = torch.zeros(batch_y, CNN_out_dim).scatter_(1, y_, 1)
+        y_hot = y_hot.float()
+
         out=CNN.forward(x)
         _, predicted = torch.max(out, 1)
         total += y.size(0)
         correct += (predicted == y).sum().item()
+
+        out_log=CNN.log_prob(x)
+        out_overall += torch.sum(y_hot * out_log)
+
     Acc=correct/total
-    return Acc
+    return Acc,out_overall.data.cpu().numpy()
 
 def Test_Accuracy(CNN,test_loader,weight,test_number=10000.,flag_opt=False,CNN_out_dim=10):
     '''

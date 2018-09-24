@@ -240,7 +240,7 @@ for n_r in range(10):
                                                                        test_loader=CNN_test_loader, data_len=5000.,
                                                                        Sequential_Accuracy=None,
                                                                        test_interval=Param['Test Interval'],
-                                                                       test_mode=Param['Test Mode'])
+                                                                       test_mode=Param['Test Mode'],CNN_out_dim=5)
             Acc_list_np = np.asarray(Acc_list)
             NLL_list_np = np.asarray(NLL_list)
             # Save Results
@@ -269,7 +269,7 @@ for n_r in range(10):
             #Sequential_Accuracy_obj = Sequential_Accuracy(test_loader_seq, CNN)
             state_list, Acc_list, NLL_list = PSGLD_obj.parallel_sample(state_pos,CNN_train_loader,data_N,num_chain=num_CNN,total_step=epoch,eps=eps,
                                                                        exp_term=Param['Exp Term'],lamb=1e-5,sigma=sigma,interval=interval,
-                                                                       test_loader=CNN_test_loader,data_len=5000.,test_interval=Param['Test Interval'])
+                                                                       test_loader=CNN_test_loader,data_len=5000.,test_interval=Param['Test Interval'],CNN_out_dim=5)
             Acc_list_np = np.asarray(Acc_list)
             NLL_list_np = np.asarray(NLL_list)
             # Save Results

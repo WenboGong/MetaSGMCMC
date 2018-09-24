@@ -42,6 +42,18 @@ def GenerateParameters(Type,**kwargs):
         Param['Random Seed']=kwargs['Random_Seed']
         Param['Num Run']=kwargs['Num_Run']
         Param['Precision']=kwargs['Precision']
+        Param['Test Interval']=kwargs['Test_Interval']
+        assert len(Param['Random Seed'])==Param['Num Run'],'Number of runs are not consistent with length of random seeds'
+    if Type=='SGDM':
+        Param['Type']=Type
+        Param['Step Size']=kwargs['Step_Size']
+        Param['Momentum']=kwargs['Momentum']
+        Param['Batch Size']=kwargs['Batch_Size']
+        Param['Epoch']=kwargs['Epoch']
+        Param['Random Seed']=kwargs['Random_Seed']
+        Param['Num Run']=kwargs['Num_Run']
+        Param['Precision']=kwargs['Precision']
+        Param['Test Interval']=kwargs['Test_Interval']
         assert len(Param['Random Seed'])==Param['Num Run'],'Number of runs are not consistent with length of random seeds'
     if Type=='SGHMC':
         Param['Type'] = Type

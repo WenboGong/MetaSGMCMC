@@ -1,4 +1,4 @@
-# Meta-Learning with Stochastic Gradient MCMC
+# Meta-Learning for Stochastic Gradient MCMC
 
 This repo contains the implementation of the experiments in the following paper:
 
@@ -6,17 +6,16 @@ This repo contains the implementation of the experiments in the following paper:
 [Yingzhen Li*](http://yingzhenli.net) and
 [Jose Miguel Hernandez Lobato](https://jmhl.org)
 
-[Meta-Learning for Stochastic Gradient MCMC](https://arxiv.org/abs/1806.04522)
+[Meta-Learning for Stochastic Gradient MCMC](https://openreview.net/forum?id=HkeoOo09YX)
 
-ArXiv 1806.04522
+International Conference on Learning Representations (ICLR), 2019
 
 Contributions: Wenbo and Yingzhen initiated the project together. 
-Wenbo designed the architecture of the sampler, and implemented all the experiments.
+Wenbo designed thewith architecture of the sampler, and implemented all the experiments.
 Yingzhen is mainly responsible for loss function design, experiment design, and the paper writing.
 Miguel is here because he is Wenbo's PhD supervisor, and he provided some comments on the draft.
 
-We will be releasing all the implementations very shortly. 
-If you use it in your research, please consider citing the paper.
+If you use our code in your research, please consider citing the paper.
 
 ## Gaussian experiments
 
@@ -28,10 +27,12 @@ See README in [BNN_MNIST/](BNN_MNIST/)
 
 ## Citing the paper (bib)
 ```
-@article{gong2018meta,
-  title = {Meta-Learning for Stochastic Gradient MCMC},
-  author = {Gong, Wenbo and Li, Yingzhen and Hern\'andez-Lobato, Jos\'e Miguel},
-  journal={arXiv preprint arXiv:1806.04522},
-  year={2018}
+@inproceedings{
+gong2018metalearning,
+title={Meta-Learning For Stochastic Gradient {MCMC}},
+author={Wenbo Gong and Yingzhen Li and José Miguel Hernández-Lobato},
+booktitle={International Conference on Learning Representations},
+year={2019},
+url={https://openreview.net/forum?id=HkeoOo09YX},
 }
 ```
